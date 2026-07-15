@@ -1,25 +1,36 @@
-<div align="center">
+<p align="center">
   <img src="docs/assets/hero.svg" width="100%" alt="Personal Quant Trading Agent" />
-</div>
+</p>
 
-<div align="center">
+<p align="center">
+  <a href="https://github.com/YishiQiu/personal-quant-trading-agent/releases"><img src="https://img.shields.io/github/v/release/YishiQiu/personal-quant-trading-agent?style=flat-square&amp;color=aa8448" alt="最新版本" /></a>
+  <a href="https://github.com/YishiQiu/personal-quant-trading-agent/actions/workflows/ci.yml"><img src="https://img.shields.io/github/actions/workflow/status/YishiQiu/personal-quant-trading-agent/ci.yml?branch=main&amp;style=flat-square&amp;label=build" alt="构建状态" /></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/License-MIT-15314f?style=flat-square" alt="MIT License" /></a>
+</p>
 
-[![Release](https://img.shields.io/github/v/release/YishiQiu/personal-quant-trading-agent?style=flat-square&color=aa8448)](https://github.com/YishiQiu/personal-quant-trading-agent/releases)
-[![CI](https://img.shields.io/github/actions/workflow/status/YishiQiu/personal-quant-trading-agent/ci.yml?branch=main&style=flat-square&label=build)](https://github.com/YishiQiu/personal-quant-trading-agent/actions/workflows/ci.yml)
-[![Python](https://img.shields.io/badge/Python-3.11%2B-15314f?style=flat-square&logo=python&logoColor=white)](https://www.python.org/)
-[![React](https://img.shields.io/badge/React-18-15314f?style=flat-square&logo=react&logoColor=white)](https://react.dev/)
-[![License](https://img.shields.io/badge/License-MIT-15314f?style=flat-square)](LICENSE)
-[![Use this template](https://img.shields.io/badge/Use_this_template-创建自己的版本-aa8448?style=flat-square&logo=github&logoColor=white)](https://github.com/YishiQiu/personal-quant-trading-agent/generate)
+<p align="center">
+  <a href="https://www.python.org/"><img src="https://img.shields.io/badge/Python-3.11%2B-15314f?style=flat-square&amp;logo=python&amp;logoColor=white" alt="Python 3.11+" /></a>
+  <a href="https://react.dev/"><img src="https://img.shields.io/badge/React-18-15314f?style=flat-square&amp;logo=react&amp;logoColor=white" alt="React 18" /></a>
+  <a href="https://github.com/YishiQiu/personal-quant-trading-agent/generate"><img src="https://img.shields.io/badge/Use_this_template-创建自己的版本-aa8448?style=flat-square&amp;logo=github&amp;logoColor=white" alt="使用项目模板" /></a>
+</p>
 
-**面向 A 股尾盘决策的个人量化研究智能体**
+<h3 align="center">面向 A 股尾盘决策的个人量化研究智能体</h3>
 
-不是自动交易机器人。它负责浏览市场、整理证据与解释机会，最终决定始终由人完成。
+<p align="center">
+  不是自动交易机器人。负责浏览市场、整理证据与解释机会，最终决定始终由人完成。
+</p>
 
-[快速开始](#-快速开始) · [创建自己的版本](#-创建自己的版本) · [算法定义](#-形态算法) · [数据边界](#-数据与模型) · [路线图](#-路线图)
+<p align="center">
+  <a href="#-快速开始">快速开始</a> ·
+  <a href="#-创建自己的版本">创建自己的版本</a> ·
+  <a href="#-形态算法">算法定义</a> ·
+  <a href="#-数据与模型">数据边界</a> ·
+  <a href="#-路线图">路线图</a>
+</p>
 
-</div>
+<br />
 
-<table>
+<table width="100%">
   <tr>
     <td align="center" width="25%"><strong>🌐 全市场</strong><br/><sub>浏览 5,000+ 只 A 股</sub></td>
     <td align="center" width="25%"><strong>⚙️ 规则漏斗</strong><br/><sub>价格、板块、流动性、形态</sub></td>
@@ -28,40 +39,49 @@
   </tr>
 </table>
 
-![Personal Quant Trading Agent 研究工作台](docs/assets/dashboard.png)
+<p align="center">
+  <img src="docs/assets/dashboard.png" width="94%" alt="Personal Quant Trading Agent 研究工作台" />
+</p>
 
-## ✦ v1.1.0 — 中文化与模板化
+<br />
 
-这一版把代码说明统一为自然中文，并整理出清晰的复刻入口。在不改变选股逻辑的前提下，别人可以更快读懂、运行和改造成自己的研究项目。
+<h2 align="center">研究流程</h2>
+<p align="center"><sub>从 5,000+ 只股票到少数候选，每一步都有明确边界</sub></p>
 
-| 这一版做了什么 | 实际效果 |
-| --- | --- |
-| 注释与说明中文化 | 模块、类、关键算法和配置说明更适合中文开发者阅读 |
-| 品牌配置集中管理 | 页面名称与首屏文案统一放在 `frontend/src/branding.ts` |
-| 改版指南 | 从换品牌、调策略到接入 Provider，都有对应修改位置 |
-| GitHub 项目模板 | 点击 **Use this template** 即可创建一份独立的新仓库 |
-| 版本统一 | Python 包、API、前端和发布记录统一为 `v1.1.0` |
+<table width="100%">
+  <tr>
+    <td align="center" width="20%"><sub>01</sub><br/><strong>全市场</strong><br/><sub>完整收盘快照</sub></td>
+    <td align="center" width="20%"><sub>02</sub><br/><strong>用户条件</strong><br/><sub>价格 · 板块 · 流动性</sub></td>
+    <td align="center" width="20%"><sub>03</sub><br/><strong>形态门控</strong><br/><sub>完美十字 · 锤子线</sub></td>
+    <td align="center" width="20%"><sub>04</sub><br/><strong>深度研究</strong><br/><sub>历史 · 新闻 · 风险</sub></td>
+    <td align="center" width="20%"><sub>05</sub><br/><strong>人工决策</strong><br/><sub>综合评分 · 不自动下单</sub></td>
+  </tr>
+</table>
 
-> [!NOTE]
-> 默认范围为 3–100 元并纳入创业板、科创板。主板与北交所默认保留；所有设置都可以在扫描前调整。
+<p align="center">
+  <strong>规则负责筛选，AI 负责研究，人负责决策。</strong><br/>
+  <sub>LLM 只读取已经入围的候选股，不能绕过规则门控或风险否决。</sub>
+</p>
 
-## 一眼看懂
+<br />
 
-```mermaid
-flowchart LR
-    U["A 股全市场"] --> F["用户筛选条件"]
-    F --> P["完美十字 / 锤子线"]
-    P --> R["历史行情 · 新闻公告 · 风险"]
-    R --> L["可选 DeepSeek 研究"]
-    L --> D["综合评分与人工决策"]
+<h2 align="center">v1.1.0 · 中文化与模板化</h2>
+<p align="center">不改变选股逻辑，只让项目更容易读懂、复刻和继续开发。</p>
 
-    style U fill:#15314f,color:#fff,stroke:#15314f
-    style F fill:#f5ede0,color:#17293e,stroke:#aa8448
-    style P fill:#eaf0f5,color:#17293e,stroke:#8297aa
-    style D fill:#e5f2ee,color:#17293e,stroke:#247467
-```
+<table width="100%">
+  <tr>
+    <td align="center" width="33.33%"><strong>中文说明</strong><br/><sub>模块、算法与配置注释统一整理</sub></td>
+    <td align="center" width="33.33%"><strong>集中品牌配置</strong><br/><sub>一个文件管理名称与首屏文案</sub></td>
+    <td align="center" width="33.33%"><strong>完整改版指南</strong><br/><sub>品牌、策略、数据源与 Agent</sub></td>
+  </tr>
+  <tr>
+    <td align="center" width="33.33%"><strong>项目模板</strong><br/><sub>一键创建没有原提交历史的新仓库</sub></td>
+    <td align="center" width="33.33%"><strong>版本统一</strong><br/><sub>Python、API 与前端保持一致</sub></td>
+    <td align="center" width="33.33%"><strong>质量验证</strong><br/><sub>测试、静态检查、构建与 CI</sub></td>
+  </tr>
+</table>
 
-**规则负责筛选，AI 负责研究，人负责决策。** LLM 永远位于候选池之后，不会扫描整个市场，也不能绕过风险规则。
+<p align="center"><sub>默认扫描 3–100 元，并纳入创业板和科创板；所有条件都可以在扫描前调整。</sub></p>
 
 ## 🚀 快速开始
 
@@ -106,17 +126,19 @@ trading-agent research --provider sina_free
 
 ## 🛠 创建自己的版本
 
-不需要从头拆代码。点击下面的按钮，GitHub 会用当前项目创建一份没有原提交历史的新仓库。
+不需要从头拆代码。GitHub 会用当前项目创建一份没有原提交历史的新仓库。
 
 <p align="center">
   <a href="https://github.com/YishiQiu/personal-quant-trading-agent/generate"><strong>使用这个模板创建项目 →</strong></a>
 </p>
 
-创建后按三步开始改版：
-
-1. 在 [`frontend/src/branding.ts`](frontend/src/branding.ts) 修改名称、标记和首屏文案。
-2. 在 [`configs/`](configs/) 调整自己的价格、板块、形态和研究参数。
-3. 按 [`复刻与改版指南`](docs/customization.md) 替换数据源、Agent 或页面。
+<table width="100%">
+  <tr>
+    <td align="center" width="33.33%"><sub>第一步</sub><br/><strong>换成自己的品牌</strong><br/><sub><code>frontend/src/branding.ts</code></sub></td>
+    <td align="center" width="33.33%"><sub>第二步</sub><br/><strong>调整研究参数</strong><br/><sub><code>configs/</code></sub></td>
+    <td align="center" width="33.33%"><sub>第三步</sub><br/><strong>替换数据源与 Agent</strong><br/><sub><a href="docs/customization.md">复刻与改版指南</a></sub></td>
+  </tr>
+</table>
 
 > [!TIP]
 > 先用 `demo` 数据源跑通页面，再接入自己的行情服务。这样可以把界面问题与数据接口问题分开排查。
@@ -134,7 +156,7 @@ T 字线和明显不对称的十字会被排除。阈值集中在 [`configs/work
 
 ## 🔌 数据与模型
 
-<table>
+<table width="100%">
   <tr><th>类别</th><th>当前来源</th><th>使用位置</th></tr>
   <tr><td>全市场 / 日 K</td><td>新浪、东方财富</td><td>规则扫描与候选历史</td></tr>
   <tr><td>公司公告</td><td>巨潮资讯 CNINFO</td><td>候选股证据</td></tr>
@@ -202,5 +224,5 @@ TradingAgent/
 本项目仅用于个人研究、工程实践和教育交流，不构成投资建议、收益承诺或自动交易服务。基于 [MIT License](LICENSE) 开源。
 
 <div align="center">
-  <sub>Built for disciplined research, not automatic speculation.</sub>
+  <sub>为有纪律的研究而建，不为自动化投机而生。</sub>
 </div>
