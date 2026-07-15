@@ -1,0 +1,24 @@
+# Candidate-level news enrichment.  Providers never participate in the
+# all-market scanner; they run only after the pattern gate has formed the
+# research pool.
+news:
+  enabled: true
+  lookback_hours: 30
+  max_items_per_stock: 5
+  raw_cache_directory: data/raw_news
+  cninfo:
+    enabled: true
+    page_size: 10
+    request_interval_seconds: 0.25
+  eastmoney_stock_news:
+    # Free public-web fallback, queried only for the research pool.  It has no
+    # SLA or commercial data licence; failures are safely ignored.
+    enabled: true
+    request_interval_seconds: 0.4
+  tushare:
+    # major_news needs a separate paid permission, so keep it disabled unless
+    # the account is explicitly granted access.
+    enabled: false
+    api_key_env: TUSHARE_TOKEN
+    source: 财联社
+    endpoint: https://api.waditu.com

@@ -1,0 +1,12 @@
+# 在真实数据源接入前，可先调节这一层参数并通过 demo provider 验证筛选行为。
+market_scanner:
+  exclude_st: true
+  exclude_delisting: true
+  min_price: 3.0
+  # 仅研究 100 元以下股票，符合当前尾盘超短线交易范围。
+  max_price: 100.0
+  min_turnover_amount: 100000000
+  max_abs_pct_change: 9.5
+  # 0 代表不做数量截断：所有价格低于 100 元且通过基础规则的股票都进入形态筛选。
+  # 深度研究数量由 workflow.research_pool_limit 控制；当前同样为 0，表示研究全部命中股。
+  max_candidates: 0

@@ -1,0 +1,10 @@
+# LLM is a second-stage reviewer only.  It never scans the full market and it
+# cannot bypass the deterministic DecisionAgent or risk vetoes.
+llm:
+  enabled: true
+  provider: deepseek
+  model: deepseek-v4-flash
+  base_url: https://api.deepseek.com
+  api_key_env: DEEPSEEK_API_KEY
+  timeout_seconds: 30
+  max_completion_tokens: 900

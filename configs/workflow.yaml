@@ -1,0 +1,36 @@
+# 14:30 尾盘研究工作流。所有阈值可在不修改代码的情况下调整。
+workflow:
+  # 0 means every perfect-doji/hammer match receives historical, news and LLM research.
+  # The model is still never called for the 5,000+ stock universe.
+  research_pool_limit: 0
+  final_recommendation_limit: 8
+  min_decision_score: 60.0
+  min_daily_bars: 20
+  require_llm_research: false
+  weights:
+    kline_trend: 0.28
+    volume: 0.24
+    catalyst: 0.20
+    risk: 0.18
+    llm: 0.10
+
+pattern_gate:
+  # A red candle in this project means close > open.  "Large" uses the
+  # high-low range as a percentage of the opening price, not the tiny doji body.
+  require_bullish_close: true
+  min_range_ratio: 0.03
+
+  # 阳线完美十字：实体接近零，上下影各接近总振幅的一半。
+  perfect_doji_max_body_ratio: 0.02
+  perfect_doji_min_shadow_ratio: 0.45
+  perfect_doji_max_shadow_imbalance_ratio: 0.06
+
+  # 阳线锤子：有明确小实体，下影长、上影短。
+  hammer_min_body_ratio: 0.03
+  hammer_max_body_ratio: 0.30
+  hammer_min_lower_shadow_to_body: 2.0
+  hammer_max_upper_shadow_to_body: 0.50
+  hammer_min_lower_shadow_ratio: 0.60
+  # 0 means every pattern match is retained for display.  Only the later
+  # workflow.research_pool_limit controls history loading and deep research.
+  max_candidates: 0

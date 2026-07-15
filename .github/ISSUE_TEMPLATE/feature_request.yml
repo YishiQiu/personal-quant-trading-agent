@@ -1,0 +1,30 @@
+name: 功能建议
+description: 建议新的研究能力、数据 Provider 或界面改进
+title: "[Feature]: "
+labels: [enhancement]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: 要解决的问题
+      description: 请描述当前工作流中的具体困难，而不只是给出方案名称。
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: 建议方案
+      description: 如果涉及数据源，请说明授权、频率、字段和稳定性边界。
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: 考虑过的替代方案
+  - type: checkboxes
+    id: scope
+    attributes:
+      label: 项目原则
+      options:
+        - label: 该建议不会让 LLM 直接扫描全市场或自动下单。
+          required: true

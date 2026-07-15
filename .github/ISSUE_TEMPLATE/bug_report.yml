@@ -1,0 +1,55 @@
+name: Bug 报告
+description: 报告可复现的问题或错误结果
+title: "[Bug]: "
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: 请先移除 API Key、Token、个人交易记录和其他敏感数据。
+  - type: input
+    id: version
+    attributes:
+      label: 版本或 Commit
+      placeholder: v0.1.0 / commit SHA
+    validations:
+      required: true
+  - type: dropdown
+    id: area
+    attributes:
+      label: 问题模块
+      options:
+        - 全市场扫描
+        - K 线形态
+        - 历史行情
+        - 新闻公告
+        - DeepSeek 研究
+        - API
+        - 前端界面
+        - 其他
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: 复现步骤
+      description: 请提供最小、稳定的复现步骤。
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: 预期与实际结果
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: 脱敏日志或截图
+      render: shell
+  - type: checkboxes
+    id: checks
+    attributes:
+      label: 提交前确认
+      options:
+        - label: 我已确认内容中不包含任何密钥或个人交易数据。
+          required: true

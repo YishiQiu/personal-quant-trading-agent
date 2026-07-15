@@ -1,0 +1,235 @@
+"""Optional FastAPI application, loaded only when the api extra is installed."""
+
+from __future__ import annotations
+
+from dataclasses import asdict
+from datetime import datetime
+from math import ceil
+from pathlib import Path
+
+from trading_agent.bootstrap import (
+    build_daily_research_workflow,
+    build_market_scanner_agent,
+    build_pattern_gate,
+    build_provider_registry,
+)
+from trading_agent.providers.eastmoney import FreeDataProviderError
+from trading_agent.providers.selection import (
+    completed_close_date,
+    latest_completed_sina_snapshot,
+    latest_sina_snapshot,
+    resolve_provider,
+    snapshot_close_date,
+)
+from trading_agent.providers.sina import SinaFreeProvider
+
+
+def create_app():  # type: ignore[no-untyped-def]
+    try:
+        from fastapi import FastAPI, HTTPException, Query
+        from fastapi.middleware.cors import CORSMiddleware
+    except ImportError as exc:  # pragma: no cover - depends on optional extra
+        raise RuntimeError('Install the API extra: pip install -e ".[api]"') from exc
+
+    app = FastAPI(title="Personal Quant Trading Agent", version="0.1.0")
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
+        allow_credentials=False,
+        allow_methods=["GET", "POST"],
+        allow_headers=["Content-Type"],
+    )
+
+    @app.get("/health")
+    def health() -> dict[str, str]:
+        return {"status": "ok"}
+
+    def latest_close_provider(provider_name: str):  # type: ignore[no-untyped-def]
+        snapshot_path: Path | None = None
+        if provider_name.casefold() == SinaFreeProvider.name:
+            snapshot_path = latest_completed_sina_snapshot(datetime.now().astimezone())
+        provider = resolve_provider(
+            build_provider_registry(),
+            provider_name,
+            snapshot_path=snapshot_path,
+            prefer_cached_sina_snapshot=False,
+        )
+        return provider, snapshot_path
+
+    def snapshot_metadata(provider, snapshot_path: Path | None, quotes=()):  # type: ignore[no-untyped-def]
+        """Resolve the close date after a fresh live capture, for display and replay."""
+
+        if provider.name == SinaFreeProvider.name and snapshot_path is None:
+            if not quotes or all(quote.is_final_bar for quote in quotes):
+                snapshot_path = latest_sina_snapshot()
+        close_date = (
+            snapshot_close_date(snapshot_path).isoformat()
+            if snapshot_path is not None
+            else completed_close_date(datetime.now().astimezone()).isoformat()
+        )
+        return snapshot_path, close_date
+
+    def pattern_payload(provider_name: str) -> dict[str, object]:
+        """Run the two deterministic funnel stages without any history calls."""
+
+        provider, snapshot_path = latest_close_provider(provider_name)
+        quotes = provider.fetch_realtime_quotes()
+        snapshot_path, close_date = snapshot_metadata(provider, snapshot_path, quotes)
+        scan_output = build_market_scanner_agent().run(quotes)
+        scan = scan_output.payload
+        assert scan is not None
+        patterns = build_pattern_gate().select(scan.candidates)
+        return {
+            "provider": provider.name,
+            "snapshot": str(snapshot_path) if snapshot_path is not None else None,
+            "close_date": close_date,
+            "scanned_count": scan.scanned_count,
+            "observation_pool_count": len(scan.candidates),
+            "pattern_match_count": len(patterns),
+            "pattern_candidates": [
+                {
+                    "code": item.candidate.quote.code,
+                    "name": item.candidate.quote.name,
+                    "last_price": item.candidate.quote.last_price,
+                    "pct_change": item.candidate.quote.pct_change,
+                    "turnover_amount": item.candidate.quote.turnover_amount,
+                    "patterns": item.candle.patterns,
+                    "body_ratio": item.candle.body_ratio,
+                    "upper_shadow_ratio": item.candle.upper_shadow_ratio,
+                    "lower_shadow_ratio": item.candle.lower_shadow_ratio,
+                }
+                for item in patterns
+            ],
+        }
+
+    @app.post("/api/v1/market-scan/{provider_name}")
+    def market_scan(provider_name: str) -> dict[str, object]:
+        try:
+            provider = build_provider_registry().create(provider_name)
+            output = build_market_scanner_agent().run(provider.fetch_realtime_quotes())
+        except FreeDataProviderError as exc:
+            raise HTTPException(status_code=503, detail=str(exc)) from exc
+        except ValueError as exc:
+            raise HTTPException(status_code=404, detail=str(exc)) from exc
+        result = output.payload
+        assert result is not None
+        return {
+            "agent": output.agent_name,
+            "scanned_count": result.scanned_count,
+            "candidates": [asdict(candidate) for candidate in result.candidates],
+        }
+
+    @app.post("/api/v1/research/{provider_name}")
+    def research(provider_name: str) -> dict[str, object]:
+        try:
+            provider, snapshot_path = latest_close_provider(provider_name)
+            result = build_daily_research_workflow().run(provider)
+            snapshot_path, close_date = snapshot_metadata(provider, snapshot_path)
+        except FreeDataProviderError as exc:
+            raise HTTPException(status_code=503, detail=str(exc)) from exc
+        except ValueError as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
+        return {
+            "provider": provider.name,
+            "snapshot": str(snapshot_path) if snapshot_path is not None else None,
+            "close_date": close_date,
+            "scanned_count": result.scanned_count,
+            "observation_pool_count": result.observation_pool_count,
+            "research_pool_count": result.research_pool_count,
+            "recommendations": [asdict(item) for item in result.recommendations],
+            "vetoed": [asdict(item) for item in result.vetoed],
+            "research_results": [asdict(item) for item in result.research_results],
+        }
+
+    @app.get("/api/v1/pattern-scan/{provider_name}")
+    def pattern_scan(provider_name: str) -> dict[str, object]:
+        """Return every bullish perfect-doji/hammer match from the latest close."""
+
+        try:
+            return pattern_payload(provider_name)
+        except FreeDataProviderError as exc:
+            raise HTTPException(status_code=503, detail=str(exc)) from exc
+        except ValueError as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
+
+    @app.get("/api/v1/universe/{provider_name}")
+    def universe(
+        provider_name: str,
+        page: int = Query(default=1, ge=1),
+        page_size: int = Query(default=50, ge=10, le=200),
+        query: str = "",
+        scope: str = "all",
+    ) -> dict[str, object]:
+        """Read the full cached universe or the price/base-rule-qualified pool.
+
+        This route intentionally stops before pattern recognition and all per-stock
+        history calls.  It makes the first funnel stage auditable in the UI.
+        """
+
+        if scope not in {"all", "base_candidates"}:
+            raise HTTPException(
+                status_code=422,
+                detail="scope must be either 'all' or 'base_candidates'",
+            )
+
+        try:
+            provider, snapshot_path = latest_close_provider(provider_name)
+            quotes = tuple(provider.fetch_realtime_quotes())
+            snapshot_path, close_date = snapshot_metadata(provider, snapshot_path, quotes)
+            output = build_market_scanner_agent().run(quotes)
+        except FreeDataProviderError as exc:
+            raise HTTPException(status_code=503, detail=str(exc)) from exc
+        except ValueError as exc:
+            raise HTTPException(status_code=422, detail=str(exc)) from exc
+        scan = output.payload
+        assert scan is not None
+        rejection_reasons = {
+            rejection.quote.code: rejection.reasons for rejection in scan.rejections
+        }
+        observation_codes = {candidate.quote.code for candidate in scan.candidates}
+        needle = query.strip().casefold()
+        sorted_quotes = sorted(quotes, key=lambda item: item.code)
+        scoped_quotes = (
+            [quote for quote in sorted_quotes if quote.code in observation_codes]
+            if scope == "base_candidates"
+            else sorted_quotes
+        )
+        matched_quotes = [
+            quote
+            for quote in scoped_quotes
+            if not needle or needle in quote.code or needle in quote.name.casefold()
+        ]
+        total_pages = max(1, ceil(len(matched_quotes) / page_size))
+        current_page = min(page, total_pages)
+        start = (current_page - 1) * page_size
+        items = []
+        for quote in matched_quotes[start : start + page_size]:
+            reasons = rejection_reasons.get(quote.code, ())
+            status = "excluded" if reasons else "observation" if quote.code in observation_codes else "eligible"
+            items.append(
+                {
+                    "code": quote.code,
+                    "name": quote.name,
+                    "last_price": quote.last_price,
+                    "pct_change": quote.pct_change,
+                    "turnover_amount": quote.turnover_amount,
+                    "status": status,
+                    "rejection_reasons": reasons,
+                }
+            )
+        return {
+            "provider": provider.name,
+            "snapshot": str(snapshot_path) if snapshot_path is not None else None,
+            "close_date": close_date,
+            "source_count": len(quotes),
+            "eligible_count": len(quotes) - len(scan.rejections),
+            "observation_count": len(scan.candidates),
+            "scope": scope,
+            "matched_count": len(matched_quotes),
+            "page": current_page,
+            "page_size": page_size,
+            "total_pages": total_pages,
+            "items": items,
+        }
+
+    return app
