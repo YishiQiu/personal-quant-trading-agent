@@ -3,10 +3,13 @@ market_scanner:
   exclude_st: true
   exclude_delisting: true
   min_price: 3.0
-  # 仅研究 100 元以下股票，符合当前尾盘超短线交易范围。
+  # 默认研究 100 元以下股票；前端可以为单次扫描覆盖价格上下限。
   max_price: 100.0
   min_turnover_amount: 100000000
   max_abs_pct_change: 9.5
-  # 0 代表不做数量截断：所有价格低于 100 元且通过基础规则的股票都进入形态筛选。
+  # 前端可在每次扫描时覆盖以下板块开关；默认保持全市场纳入。
+  include_chinext: true
+  include_star_market: true
+  # 0 代表不做数量截断：所有符合本次价格和板块范围的股票都进入形态筛选。
   # 深度研究数量由 workflow.research_pool_limit 控制；当前同样为 0，表示研究全部命中股。
   max_candidates: 0

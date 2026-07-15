@@ -6,6 +6,7 @@ import type {
   PatternScanResponse,
   Recommendation,
   ResearchResponse,
+  ScanFilters,
   UniverseItem,
   UniverseResponse,
 } from "./types";
@@ -15,6 +16,12 @@ type ResultView = "patterns" | "research" | "recommendations" | "universe";
 type UniverseScope = "all" | "base_candidates";
 
 const patternPageSize = 50;
+const defaultScanFilters: ScanFilters = {
+  min_price: 3,
+  max_price: 100,
+  include_chinext: true,
+  include_star_market: true,
+};
 
 function scoreTone(score: number): string {
   if (score >= 70) return "strong";
@@ -42,11 +49,27 @@ function turnover(amount: number): string {
 
 function statusLabel(item: UniverseItem): string {
   if (item.status !== "excluded") return "基础通过";
-  return item.rejection_reasons.join(" · ") || "未通过基础规则";
+  const labels: Record<string, string> = {
+    st: "ST",
+    delisting: "退市风险",
+    price_out_of_range: "价格不符",
+    insufficient_turnover: "成交额不足",
+    pct_change_out_of_range: "涨跌幅超限",
+    chinext_excluded: "未纳入创业板",
+    star_market_excluded: "未纳入科创板",
+  };
+  return item.rejection_reasons.map((reason) => labels[reason] ?? reason).join(" · ") || "未通过基础规则";
 }
 
 function closeDateLabel(closeDate: string | undefined): string {
   return closeDate ? closeDate.replaceAll("-", ".") : "等待扫描";
+}
+
+function boardSummary(filters: ScanFilters): string {
+  if (filters.include_chinext && filters.include_star_market) return "含创业板 · 科创板";
+  if (filters.include_chinext) return "含创业板 · 不含科创板";
+  if (filters.include_star_market) return "不含创业板 · 含科创板";
+  return "仅主板与北交所";
 }
 
 function CandidateCard({ item, rank, featured = false }: { item: Recommendation; rank: number; featured?: boolean }) {
@@ -114,8 +137,18 @@ export default function App() {
   const [universeError, setUniverseError] = useState<string | null>(null);
   const [universeQuery, setUniverseQuery] = useState("");
   const [universeScope, setUniverseScope] = useState<UniverseScope>("all");
+  const [draftFilters, setDraftFilters] = useState<ScanFilters>(defaultScanFilters);
+  const [appliedFilters, setAppliedFilters] = useState<ScanFilters>(defaultScanFilters);
+  const [filterError, setFilterError] = useState<string | null>(null);
 
   const startAnalysis = async () => {
+    if (draftFilters.min_price < 0 || draftFilters.max_price <= draftFilters.min_price) {
+      setFilterError("最高价格必须大于最低价格，且最低价格不能小于 0。");
+      return;
+    }
+    const nextFilters = { ...draftFilters };
+    setAppliedFilters(nextFilters);
+    setFilterError(null);
     setState("running");
     setError(null);
     setPatternResult(null);
@@ -127,7 +160,9 @@ export default function App() {
     setPatternPage(1);
     setResultView("patterns");
     try {
-      setPatternResult(await runPatternScan());
+      const response = await runPatternScan(nextFilters);
+      setPatternResult(response);
+      setAppliedFilters(response.filters ?? nextFilters);
       setState("completed");
     } catch (caught) {
       setError(caught instanceof Error ? caught.message : "形态筛选服务暂时不可用");
@@ -139,7 +174,7 @@ export default function App() {
     setResearchLoading(true);
     setResearchError(null);
     try {
-      const response = await runPreviousCloseResearch();
+      const response = await runPreviousCloseResearch(appliedFilters);
       setResearchResult(response);
       setActiveCode(response.research_results[0]?.code ?? null);
       setResultView("research");
@@ -150,11 +185,16 @@ export default function App() {
     }
   };
 
-  const loadUniverse = async (page = 1, query = universeQuery, scope = universeScope) => {
+  const loadUniverse = async (
+    page = 1,
+    query = universeQuery,
+    scope = universeScope,
+    filters = appliedFilters,
+  ) => {
     setUniverseLoading(true);
     setUniverseError(null);
     try {
-      setUniverse(await getUniverse(page, query, scope));
+      setUniverse(await getUniverse(page, query, scope, filters));
     } catch (caught) {
       setUniverseError(caught instanceof Error ? caught.message : "全市场数据暂时不可用");
     } finally {
@@ -178,6 +218,7 @@ export default function App() {
     : resultView === "research" ? "全部分析结果"
       : resultView === "recommendations" ? "重点关注"
         : "全市场收盘快照";
+  const controlsDisabled = state === "running" || researchLoading;
 
   return (
     <main className="app-shell">
@@ -198,10 +239,22 @@ export default function App() {
           <p className="eyebrow">每日收盘研究</p>
           <h2>从全市场，找到<em>少数机会</em></h2>
           <p>自动采用最近一个完整交易日的收盘数据。先扫描全市场，再对阳线完美十字与锤子线命中股补充历史行情、新闻公告和风险判断。</p>
-          <div className="hero-notes"><span>股价低于 100 元</span><span>完美十字 · 锤子线</span><span>全部命中股深度研究</span></div>
+          <div className="hero-notes"><span>{draftFilters.min_price}–{draftFilters.max_price} 元</span><span>{boardSummary(draftFilters)}</span><span>完美十字 · 锤子线</span></div>
         </div>
         <div className="hero-action">
-          <button className="start-button" onClick={startAnalysis} disabled={state === "running"}>
+          <div className="filter-heading"><div><small>第一层筛选</small><strong>设定研究范围</strong></div><span>可随时调整</span></div>
+          <div className="price-filter">
+            <label><span>最低价</span><div><input type="number" min="0" step="0.5" value={draftFilters.min_price} disabled={controlsDisabled} onChange={(event) => setDraftFilters((current) => ({ ...current, min_price: Number(event.target.value) }))} /><i>元</i></div></label>
+            <b>—</b>
+            <label><span>最高价</span><div><input type="number" min="0.01" step="0.5" value={draftFilters.max_price} disabled={controlsDisabled} onChange={(event) => setDraftFilters((current) => ({ ...current, max_price: Number(event.target.value) }))} /><i>元</i></div></label>
+          </div>
+          <div className="board-filter" aria-label="板块范围">
+            <label><div><strong>创业板</strong><small>300 / 301</small></div><input type="checkbox" checked={draftFilters.include_chinext} disabled={controlsDisabled} onChange={(event) => setDraftFilters((current) => ({ ...current, include_chinext: event.target.checked }))} /><span className="toggle" /></label>
+            <label><div><strong>科创板</strong><small>688 / 689</small></div><input type="checkbox" checked={draftFilters.include_star_market} disabled={controlsDisabled} onChange={(event) => setDraftFilters((current) => ({ ...current, include_star_market: event.target.checked }))} /><span className="toggle" /></label>
+          </div>
+          <p className="filter-note">主板与北交所默认纳入</p>
+          {filterError && <p className="filter-error">{filterError}</p>}
+          <button className="start-button" onClick={startAnalysis} disabled={controlsDisabled}>
             <span>{state === "running" ? "正在扫描" : "开始扫描"}</span><b>→</b>
           </button>
         </div>
@@ -225,6 +278,8 @@ export default function App() {
             <div><p className="eyebrow">本次分析 · {closeDateLabel(closeDate)}</p><h2>{resultHeading}</h2></div>
             <p className="snapshot-label">{closeDate ? `收盘日期 ${closeDate}` : "读取最近可用收盘快照"}</p>
           </section>
+
+          <div className="applied-filter-bar"><span>本次筛选</span><strong>{appliedFilters.min_price}–{appliedFilters.max_price} 元</strong><i /> <strong>{boardSummary(appliedFilters)}</strong><small>后续深度研究沿用相同条件</small></div>
 
           <nav className="view-switcher" aria-label="结果视图">
             <button className={resultView === "patterns" ? "selected" : ""} onClick={() => setResultView("patterns")}>形态命中 <span>{patternResult.pattern_match_count}</span></button>
@@ -265,7 +320,7 @@ export default function App() {
 
           {resultView === "universe" && (
             <section className="data-surface universe-panel"><div className="surface-header compact"><div><p>全部股票</p><h3>最近收盘行情</h3></div><form className="universe-toolbar" onSubmit={(event) => { event.preventDefault(); void loadUniverse(1); }}><input value={universeQuery} onChange={(event) => setUniverseQuery(event.target.value)} placeholder="输入股票代码或名称" /><button type="submit" disabled={universeLoading}>搜索</button></form></div>
-              <div className="scope-switcher"><button className={universeScope === "all" ? "selected" : ""} onClick={() => { setUniverseScope("all"); void loadUniverse(1, universeQuery, "all"); }} disabled={universeLoading}>全部股票</button><button className={universeScope === "base_candidates" ? "selected" : ""} onClick={() => { setUniverseScope("base_candidates"); void loadUniverse(1, universeQuery, "base_candidates"); }} disabled={universeLoading}>&lt;100 元且基础通过</button></div>
+              <div className="scope-switcher"><button className={universeScope === "all" ? "selected" : ""} onClick={() => { setUniverseScope("all"); void loadUniverse(1, universeQuery, "all"); }} disabled={universeLoading}>全部股票</button><button className={universeScope === "base_candidates" ? "selected" : ""} onClick={() => { setUniverseScope("base_candidates"); void loadUniverse(1, universeQuery, "base_candidates"); }} disabled={universeLoading}>当前条件通过</button></div>
               {universeLoading && <p className="message">正在读取完整收盘快照…</p>}{universeError && <p className="message error">{universeError}</p>}
               {universe && !universeLoading && <><p className="surface-meta">快照共 {universe.source_count.toLocaleString()} 只；基础规则通过 {universe.observation_count.toLocaleString()} 只；当前范围匹配 {universe.matched_count.toLocaleString()} 只。</p><div className="table-scroll"><table><thead><tr><th>代码</th><th>名称</th><th>最近收盘</th><th>涨跌幅</th><th>成交额</th><th>状态</th></tr></thead><tbody>{universe.items.map((item) => <tr key={item.code}><td>{item.code}</td><td className="company">{item.name}</td><td>{item.last_price.toFixed(2)}</td><td className={item.pct_change >= 0 ? "rise" : "fall"}>{item.pct_change.toFixed(2)}%</td><td>{turnover(item.turnover_amount)}</td><td><span className={`status ${item.status}`}>{statusLabel(item)}</span></td></tr>)}</tbody></table></div><div className="pagination"><button disabled={universe.page <= 1} onClick={() => void loadUniverse(universe.page - 1)}>← 上一页</button><span>{universe.page} / {universe.total_pages}</span><button disabled={universe.page >= universe.total_pages} onClick={() => void loadUniverse(universe.page + 1)}>下一页 →</button></div></>}
             </section>

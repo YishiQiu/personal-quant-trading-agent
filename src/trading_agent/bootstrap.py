@@ -14,7 +14,7 @@ from trading_agent.agents.llm_research import LlmResearchAgent
 from trading_agent.agents.market_scanner import MarketScannerAgent
 from trading_agent.agents.risk import RiskAgent
 from trading_agent.agents.volume import VolumeAgent
-from trading_agent.config import load_market_scanner_config
+from trading_agent.config import MarketScannerConfig, load_market_scanner_config
 from trading_agent.config_llm import load_llm_provider_config
 from trading_agent.config_news import load_news_config
 from trading_agent.config_workflow import load_application_config
@@ -46,10 +46,14 @@ def build_provider_registry() -> ProviderRegistry:
     return registry
 
 
-def build_market_scanner_agent(config_path: str | Path = DEFAULT_SCANNER_CONFIG) -> MarketScannerAgent:
+def build_market_scanner_agent(
+    config_path: str | Path = DEFAULT_SCANNER_CONFIG,
+    *,
+    config: MarketScannerConfig | None = None,
+) -> MarketScannerAgent:
     from trading_agent.market_scanner.service import MarketScanner
 
-    return MarketScannerAgent(MarketScanner(load_market_scanner_config(config_path)))
+    return MarketScannerAgent(MarketScanner(config or load_market_scanner_config(config_path)))
 
 
 def build_pattern_gate(workflow_config_path: str | Path = DEFAULT_WORKFLOW_CONFIG) -> PatternGate:
@@ -107,13 +111,15 @@ def build_daily_research_workflow(
     scanner_config_path: str | Path = DEFAULT_SCANNER_CONFIG,
     workflow_config_path: str | Path = DEFAULT_WORKFLOW_CONFIG,
     news_config_path: str | Path | None = DEFAULT_NEWS_CONFIG,
+    *,
+    scanner_config: MarketScannerConfig | None = None,
 ) -> DailyResearchWorkflow:
     """Build the complete 14:30 research workflow with optional source-attributed news."""
 
     application_config = load_application_config(workflow_config_path)
     return DailyResearchWorkflow(
         config=application_config,
-        scanner=build_market_scanner_agent(scanner_config_path),
+        scanner=build_market_scanner_agent(scanner_config_path, config=scanner_config),
         pattern_gate=PatternGate(application_config.pattern_gate),
         kline_trend=KlineTrendAgent(),
         volume=VolumeAgent(),

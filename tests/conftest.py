@@ -18,6 +18,8 @@ def scanner_config() -> MarketScannerConfig:
         min_turnover_amount=100_000_000,
         max_abs_pct_change=9.5,
         max_candidates=2,
+        include_chinext=True,
+        include_star_market=True,
     )
 
 

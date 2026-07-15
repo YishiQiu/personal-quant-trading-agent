@@ -1,0 +1,66 @@
+<svg width="1200" height="340" viewBox="0 0 1200 340" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="bg" x1="40" y1="18" x2="1130" y2="330" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#10273F"/>
+      <stop offset="0.58" stop-color="#173B5C"/>
+      <stop offset="1" stop-color="#0C2237"/>
+    </linearGradient>
+    <linearGradient id="gold" x1="0" y1="0" x2="1" y2="1">
+      <stop stop-color="#E4C990"/>
+      <stop offset="1" stop-color="#A98448"/>
+    </linearGradient>
+    <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feDropShadow dx="0" dy="10" stdDeviation="16" flood-color="#06121F" flood-opacity="0.35"/>
+    </filter>
+  </defs>
+
+  <rect width="1200" height="340" rx="28" fill="url(#bg)"/>
+  <path d="M0 250C204 198 350 323 565 275C783 226 967 90 1200 122V340H0V250Z" fill="#FFFFFF" fill-opacity="0.025"/>
+  <circle cx="1086" cy="46" r="156" stroke="#D9BB7E" stroke-opacity="0.10"/>
+  <circle cx="1086" cy="46" r="106" stroke="#D9BB7E" stroke-opacity="0.08"/>
+
+  <g transform="translate(62 55)" filter="url(#shadow)">
+    <rect width="74" height="74" rx="20" fill="#F8F4EA"/>
+    <text x="37" y="49" text-anchor="middle" fill="#15314F" font-family="Georgia, serif" font-size="38" font-weight="700">Q</text>
+    <path d="M50 57H62" stroke="#A98448" stroke-width="4" stroke-linecap="round"/>
+  </g>
+
+  <text x="62" y="170" fill="#D9BB7E" font-family="Arial, sans-serif" font-size="13" font-weight="700" letter-spacing="4">PERSONAL RESEARCH INFRASTRUCTURE</text>
+  <text x="62" y="218" fill="#FFFFFF" font-family="Arial, sans-serif" font-size="40" font-weight="700" letter-spacing="-1">Personal Quant Trading Agent</text>
+  <text x="62" y="254" fill="#C9D5E0" font-family="Arial, sans-serif" font-size="17">A-share close research · deterministic funnel · AI-assisted evidence</text>
+
+  <g transform="translate(62 283)">
+    <rect width="88" height="30" rx="15" fill="#D9BB7E" fill-opacity="0.14" stroke="#D9BB7E" stroke-opacity="0.48"/>
+    <text x="44" y="20" text-anchor="middle" fill="#E8D5AA" font-family="Arial, sans-serif" font-size="12" font-weight="700">v1.0.0</text>
+    <text x="110" y="20" fill="#9EB0C0" font-family="Arial, sans-serif" font-size="12">RULES FIRST · HUMAN DECISION</text>
+  </g>
+
+  <g transform="translate(745 55)">
+    <rect width="390" height="230" rx="22" fill="#FFFFFF" fill-opacity="0.055" stroke="#FFFFFF" stroke-opacity="0.12"/>
+    <path d="M30 184H360" stroke="#FFFFFF" stroke-opacity="0.10"/>
+    <path d="M30 131H360" stroke="#FFFFFF" stroke-opacity="0.08"/>
+    <path d="M30 78H360" stroke="#FFFFFF" stroke-opacity="0.08"/>
+
+    <g stroke-linecap="round">
+      <path d="M74 153V204" stroke="#74B4A8" stroke-width="3"/>
+      <rect x="65" y="165" width="18" height="24" rx="3" fill="#74B4A8"/>
+      <path d="M126 108V179" stroke="#D17A7E" stroke-width="3"/>
+      <rect x="117" y="129" width="18" height="31" rx="3" fill="#D17A7E"/>
+      <path d="M178 88V158" stroke="#74B4A8" stroke-width="3"/>
+      <rect x="169" y="105" width="18" height="32" rx="3" fill="#74B4A8"/>
+      <path d="M230 62V136" stroke="#D17A7E" stroke-width="3"/>
+      <rect x="221" y="82" width="18" height="28" rx="3" fill="#D17A7E"/>
+      <path d="M282 43V112" stroke="#74B4A8" stroke-width="3"/>
+      <rect x="273" y="63" width="18" height="28" rx="3" fill="#74B4A8"/>
+    </g>
+
+    <path d="M50 184C93 181 113 159 151 151C190 143 213 108 250 98C286 89 304 66 338 53" stroke="url(#gold)" stroke-width="3" stroke-linecap="round"/>
+    <circle cx="338" cy="53" r="5" fill="#E4C990"/>
+
+    <g transform="translate(30 18)">
+      <rect width="124" height="27" rx="13.5" fill="#0E263D" stroke="#FFFFFF" stroke-opacity="0.10"/>
+      <circle cx="17" cy="13.5" r="4" fill="#74B4A8"/>
+      <text x="29" y="18" fill="#C9D5E0" font-family="Arial, sans-serif" font-size="10" font-weight="700">MARKET FUNNEL</text>
+    </g>
+  </g>
+</svg>

@@ -1,9 +1,23 @@
-import type { PatternScanResponse, ResearchResponse, UniverseResponse } from "./types";
+import type {
+  PatternScanResponse,
+  ResearchResponse,
+  ScanFilters,
+  UniverseResponse,
+} from "./types";
 
 export class ResearchApiError extends Error {}
 
-export async function runPatternScan(): Promise<PatternScanResponse> {
-  const response = await fetch("/api/v1/pattern-scan/sina_free");
+function scanParams(filters: ScanFilters): URLSearchParams {
+  return new URLSearchParams({
+    min_price: String(filters.min_price),
+    max_price: String(filters.max_price),
+    include_chinext: String(filters.include_chinext),
+    include_star_market: String(filters.include_star_market),
+  });
+}
+
+export async function runPatternScan(filters: ScanFilters): Promise<PatternScanResponse> {
+  const response = await fetch(`/api/v1/pattern-scan/sina_free?${scanParams(filters).toString()}`);
   const body = (await response.json().catch(() => null)) as
     | PatternScanResponse
     | { detail?: string }
@@ -15,8 +29,10 @@ export async function runPatternScan(): Promise<PatternScanResponse> {
   return body as PatternScanResponse;
 }
 
-export async function runPreviousCloseResearch(): Promise<ResearchResponse> {
-  const response = await fetch("/api/v1/research/sina_free", { method: "POST" });
+export async function runPreviousCloseResearch(filters: ScanFilters): Promise<ResearchResponse> {
+  const response = await fetch(`/api/v1/research/sina_free?${scanParams(filters).toString()}`, {
+    method: "POST",
+  });
   const body = (await response.json().catch(() => null)) as
     | ResearchResponse
     | { detail?: string }
@@ -32,8 +48,12 @@ export async function getUniverse(
   page: number,
   query: string,
   scope: "all" | "base_candidates",
+  filters: ScanFilters,
 ): Promise<UniverseResponse> {
-  const params = new URLSearchParams({ page: String(page), page_size: "50", scope });
+  const params = scanParams(filters);
+  params.set("page", String(page));
+  params.set("page_size", "50");
+  params.set("scope", scope);
   if (query.trim()) params.set("query", query.trim());
   const response = await fetch(`/api/v1/universe/sina_free?${params.toString()}`);
   const body = (await response.json().catch(() => null)) as
