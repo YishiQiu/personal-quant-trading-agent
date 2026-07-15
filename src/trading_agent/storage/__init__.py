@@ -1,4 +1,4 @@
-"""Persistence ports and SQLite implementation."""
+"""持久化接口及 SQLite 实现。"""
 
 from trading_agent.storage.sqlite import SqliteRecommendationRepository
 

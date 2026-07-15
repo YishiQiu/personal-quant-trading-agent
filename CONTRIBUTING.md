@@ -31,7 +31,7 @@ cd frontend
 npm run build
 ```
 
-## Pull Request
+## 合并请求
 
 请在 PR 中说明问题、实现方式、验证结果和可能影响的数据边界。界面变化建议附截图，数据 Provider 变化建议附一份脱敏后的字段样例。
 

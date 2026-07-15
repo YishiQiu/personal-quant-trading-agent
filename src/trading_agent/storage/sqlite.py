@@ -1,4 +1,4 @@
-"""SQLite persistence for reproducible recommendations and later learning labels."""
+"""使用 SQLite 保存可复现的推荐记录和后续学习标签。"""
 
 from __future__ import annotations
 

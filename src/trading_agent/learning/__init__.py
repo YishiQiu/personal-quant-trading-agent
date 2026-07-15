@@ -1,4 +1,4 @@
-"""Outcome-label interfaces for future personalized weighting."""
+"""为后续个性化权重学习准备的结果标签接口。"""
 
 from trading_agent.learning.service import Outcome, OutcomeEvaluator
 

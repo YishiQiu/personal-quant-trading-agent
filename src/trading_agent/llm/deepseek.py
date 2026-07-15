@@ -1,4 +1,4 @@
-"""DeepSeek alias for the generic OpenAI-compatible research adapter."""
+"""通用 OpenAI 兼容研究适配器的 DeepSeek 别名。"""
 
 from trading_agent.llm.openai_compatible import (
     LlmProviderResearchError as DeepSeekResearchError,

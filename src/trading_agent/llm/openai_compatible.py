@@ -1,4 +1,4 @@
-"""Shared JSON-only adapter for OpenAI-compatible research-model providers."""
+"""多个 OpenAI 兼容研究模型共用的纯 JSON 适配器。"""
 
 from __future__ import annotations
 
@@ -15,12 +15,12 @@ from trading_agent.domain.analysis import LlmResearchFinding, PatternCandidate
 
 
 class LlmProviderResearchError(RuntimeError):
-    """A safe, secret-free failure from an LLM provider adapter."""
+    """不泄露密钥等敏感信息的模型适配器异常。"""
 
 
 @dataclass(frozen=True, slots=True)
 class OpenAiCompatibleLlmResearchClient(LlmResearchClient):
-    """Request validated JSON research from a configured OpenAI-compatible provider."""
+    """向已配置的 OpenAI 兼容服务请求研究结果，并校验返回 JSON。"""
 
     api_key: str
     config: LlmProviderConfig

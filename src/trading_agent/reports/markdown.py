@@ -1,4 +1,4 @@
-"""Markdown report renderer with no hidden market-data calls."""
+"""Markdown 报告渲染器，不在渲染过程中偷偷调用行情接口。"""
 
 from __future__ import annotations
 

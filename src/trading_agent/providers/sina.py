@@ -1,8 +1,7 @@
-"""Low-frequency Sina public-source fallback for completed A-share daily bars.
+"""用于完整 A 股日 K 的低频新浪公开备用数据源。
 
-The quote-list endpoint is useful before the next session opens: its 15:30 quote
-snapshot contains the preceding completed daily candle.  It is a fallback, not a
-guaranteed or licensed production feed, and never touches Kimi or 同花顺 data.
+下一交易日开盘前可以使用行情列表接口，其中 15:30 快照包含上一根完整日 K。
+它只是备用方案，不是有稳定性或授权保证的生产行情，也不会接触 Kimi 或同花顺数据。
 """
 
 from __future__ import annotations
@@ -28,10 +27,9 @@ JsonObject = Mapping[str, Any]
 
 
 class SinaFreeProvider(MarketDataProvider, CandidateResearchProvider):
-    """Fetch a validated latest completed daily snapshot from Sina public endpoints.
+    """从新浪公开接口抓取并校验最近完整日线快照。
 
-    Use this provider for a pre-open replay of the preceding trading day's close.
-    It should not be used as a claim of a realtime, licensed market-data service.
+    这个数据源适合盘前回放前一交易日收盘，不应被描述为实时或授权行情服务。
     """
 
     name = "sina_free"
@@ -76,7 +74,7 @@ class SinaFreeProvider(MarketDataProvider, CandidateResearchProvider):
         self._now = now or (lambda: datetime.now().astimezone())
 
     def fetch_realtime_quotes(self) -> tuple[QuoteSnapshot, ...]:
-        """Return the newest available quote snapshot after a complete pagination pass."""
+        """完成全部分页后返回最新可用行情快照。"""
 
         if self._snapshot_path is not None:
             return self._load_cached_snapshot()
@@ -90,9 +88,7 @@ class SinaFreeProvider(MarketDataProvider, CandidateResearchProvider):
             if len(page_rows) > self._page_size:
                 raise SnapshotIncompleteError(f"Sina page {page} exceeded its requested size")
             if len(page_rows) < self._page_size:
-                # The endpoint lacks a total field. Re-fetching the final short
-                # page prevents a transient empty response from masquerading as
-                # the end of the universe.
+                # 接口没有总数栏，因此短页需要再次确认，避免临时空响应被误判为翻页结束。
                 confirmation = self._fetch_quote_page(page)
                 if _codes(page_rows) != _codes(confirmation):
                     raise SnapshotIncompleteError("Sina final quote page was not stable")
@@ -108,8 +104,7 @@ class SinaFreeProvider(MarketDataProvider, CandidateResearchProvider):
         is_final_bar = _latest_bar_is_final(observed_at)
         quotes = tuple(_quote_from_row(row, observed_at, is_final_bar) for row in rows)
         self._validate_snapshot(quotes)
-        # An intraday response is useful only for an explicitly chosen future
-        # realtime provider. It must never replace yesterday's completed bar.
+        # 盘中响应只能供未来明确选择的实时数据源使用，不能覆盖昨天的完整日 K。
         if is_final_bar:
             self._persist_raw_snapshot(observed_at, raw_pages)
         return quotes
@@ -129,8 +124,7 @@ class SinaFreeProvider(MarketDataProvider, CandidateResearchProvider):
         rows = [row for page in pages for row in page]
         if not all(isinstance(row, Mapping) for row in rows):
             raise FreeDataProviderError("Sina snapshot has invalid quote rows")
-        # A persisted snapshot is immutable evidence of a completed capture;
-        # replay must not inherit the current wall-clock session flag.
+        # 已保存快照是一次完整抓取的不可变证据，回放时不能继承当前时钟对应的盘中状态。
         quotes = tuple(_quote_from_row(row, observed_at, True) for row in rows)
         self._validate_snapshot(quotes)
         return quotes
@@ -138,7 +132,7 @@ class SinaFreeProvider(MarketDataProvider, CandidateResearchProvider):
     def fetch_research_contexts(
         self, codes: Sequence[str], as_of: datetime
     ) -> dict[str, ResearchContext]:
-        """Fetch up to 300 completed daily bars for the already-shortlisted stocks."""
+        """为已入围股票抓取最多 300 根完整日 K。"""
 
         contexts: dict[str, ResearchContext] = {}
         for code in codes:
@@ -227,7 +221,7 @@ def _urlopen_text(url: str) -> str:
             "User-Agent": "PersonalQuantTradingAgent/0.1 (+local-research)",
         },
     )
-    with urlopen(request, timeout=20) as response:  # noqa: S310 - module-constant public source
+    with urlopen(request, timeout=20) as response:  # noqa: S310 - 公开接口地址是模块常量
         raw = response.read()
     return raw.decode("gbk")
 
@@ -279,9 +273,8 @@ def _daily_bar(row: JsonObject, code: str) -> DailyBar:
             low_price=float(row["low"]),
             close_price=float(row["close"]),
             volume=float(row["volume"]),
-            # This public K-line response has no amount field. It is kept at
-            # zero rather than fabricated; turnover-dependent agents need a
-            # richer provider before they can use historical turnover.
+            # 这个公开日 K 响应没有成交额字段，因此保留为 0 而不编造数据；
+            # 依赖历史成交额的 Agent 必须换用字段更完整的数据源。
             turnover_amount=0.0,
         )
     except (KeyError, TypeError, ValueError) as exc:
@@ -312,7 +305,7 @@ def _number(value: object) -> float | None:
 
 
 def _latest_bar_is_final(observed_at: datetime) -> bool:
-    """A quote read before auction or after close represents the prior completed bar."""
+    """竞价前或收盘后读取的行情代表最近一根完整日 K。"""
 
     if observed_at.weekday() >= 5:
         return True

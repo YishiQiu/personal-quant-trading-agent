@@ -1,4 +1,4 @@
-"""Strongly typed, vendor-neutral data models."""
+"""与数据厂商无关的强类型数据模型。"""
 
 from __future__ import annotations
 
@@ -8,7 +8,7 @@ from datetime import datetime
 
 @dataclass(frozen=True, slots=True)
 class QuoteSnapshot:
-    """A normalized real-time A-share quote supplied by a provider plugin."""
+    """由数据源插件提供并完成标准化的 A 股行情快照。"""
 
     code: str
     name: str
@@ -28,7 +28,7 @@ class QuoteSnapshot:
 
 @dataclass(frozen=True, slots=True)
 class Candidate:
-    """A liquid stock that passed the deterministic market funnel."""
+    """通过确定性市场漏斗的流动性候选股。"""
 
     quote: QuoteSnapshot
     liquidity_score: float
@@ -36,7 +36,7 @@ class Candidate:
 
 @dataclass(frozen=True, slots=True)
 class Rejection:
-    """An auditable exclusion from the market funnel."""
+    """市场漏斗中可追溯的排除记录。"""
 
     quote: QuoteSnapshot
     reasons: tuple[str, ...]
@@ -44,7 +44,7 @@ class Rejection:
 
 @dataclass(frozen=True, slots=True)
 class ScanResult:
-    """Complete scanner outcome, including exclusions for later review."""
+    """完整扫描结果，同时保留排除项方便复核。"""
 
     scanned_at: datetime
     candidates: tuple[Candidate, ...]
@@ -58,7 +58,7 @@ class ScanResult:
 
 @dataclass(frozen=True, slots=True)
 class DailyBar:
-    """A completed daily OHLCV bar. Intraday bars must never be stored here."""
+    """已经收盘的日线 OHLCV；盘中数据不能存入这里。"""
 
     trade_date: datetime
     open_price: float
@@ -71,13 +71,12 @@ class DailyBar:
 
 @dataclass(frozen=True, slots=True)
 class NewsItem:
-    """A raw, attributable news or announcement record."""
+    """保留原始来源的新闻或公告记录。"""
 
     headline: str
     published_at: datetime
     source: str
-    # Tushare's major_news response contains attributed text but no canonical
-    # article URL.  ``None`` is preferable to inventing a link.
+    # Tushare major_news 只有带来源的正文，没有统一原文链接；宁可保留 None，也不伪造链接。
     url: str | None = None
     related_codes: tuple[str, ...] = field(default_factory=tuple)
     related_themes: tuple[str, ...] = field(default_factory=tuple)
@@ -110,7 +109,7 @@ class SectorSnapshot:
 
 @dataclass(frozen=True, slots=True)
 class ResearchContext:
-    """All non-quote evidence required to research one shortlisted candidate."""
+    """研究单只入围股票所需的全部非行情证据。"""
 
     code: str
     daily_bars: tuple[DailyBar, ...] = field(default_factory=tuple)

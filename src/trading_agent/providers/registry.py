@@ -1,4 +1,4 @@
-"""Explicit provider registry for replaceable data-source adapters."""
+"""显式注册可替换的数据源适配器。"""
 
 from __future__ import annotations
 

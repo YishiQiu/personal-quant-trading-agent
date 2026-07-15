@@ -1,7 +1,7 @@
 # 14:30 尾盘研究工作流。所有阈值可在不修改代码的情况下调整。
 workflow:
-  # 0 means every perfect-doji/hammer match receives historical, news and LLM research.
-  # The model is still never called for the 5,000+ stock universe.
+  # 0 表示所有完美十字和锤子线命中股都进入历史、新闻和模型研究。
+  # 即使设为 0，大模型也不会直接扫描 5,000 多只股票。
   research_pool_limit: 0
   final_recommendation_limit: 8
   min_decision_score: 60.0
@@ -15,8 +15,8 @@ workflow:
     llm: 0.10
 
 pattern_gate:
-  # A red candle in this project means close > open.  "Large" uses the
-  # high-low range as a percentage of the opening price, not the tiny doji body.
+  # 本项目中的阳线指收盘价高于开盘价。“大”按最高最低振幅占开盘价的比例计算，
+  # 不是按十字星本身很小的实体计算。
   require_bullish_close: true
   min_range_ratio: 0.03
 
@@ -31,6 +31,6 @@ pattern_gate:
   hammer_min_lower_shadow_to_body: 2.0
   hammer_max_upper_shadow_to_body: 0.50
   hammer_min_lower_shadow_ratio: 0.60
-  # 0 means every pattern match is retained for display.  Only the later
-  # workflow.research_pool_limit controls history loading and deep research.
+  # 0 表示保留并展示全部形态命中股；历史加载和深度研究数量只由
+  # workflow.research_pool_limit 控制。
   max_candidates: 0

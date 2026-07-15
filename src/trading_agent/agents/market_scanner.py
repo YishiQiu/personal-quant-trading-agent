@@ -1,4 +1,4 @@
-"""Agent adapter around the deterministic scanner service."""
+"""确定性扫描服务对应的 Agent 适配器。"""
 
 from __future__ import annotations
 

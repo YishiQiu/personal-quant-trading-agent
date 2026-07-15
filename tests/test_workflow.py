@@ -22,7 +22,7 @@ def test_demo_workflow_runs_two_stage_research() -> None:
 
 
 class MissingHistoryProvider(DemoMarketDataProvider):
-    """Simulates a free source that returns a quote but cannot enrich it."""
+    """模拟只能返回行情、无法补充研究信息的免费数据源。"""
 
     def fetch_research_contexts(self, codes: tuple[str, ...], as_of: object) -> dict[str, object]:
         return {}

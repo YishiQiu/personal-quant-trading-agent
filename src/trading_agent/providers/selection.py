@@ -1,4 +1,4 @@
-"""Shared provider selection policy for commands and HTTP entry points."""
+"""命令行与 HTTP 接口共用的数据源选择规则。"""
 
 from __future__ import annotations
 
@@ -18,7 +18,7 @@ DEFAULT_RAW_SNAPSHOT_DIRECTORY = Path("data/raw_snapshots")
 def latest_sina_snapshot(
     raw_snapshot_directory: str | Path | None = None,
 ) -> Path:
-    """Return the most recent completed Sina daily snapshot or fail clearly."""
+    """返回最近一份完整新浪日线快照；找不到时明确报错。"""
 
     directory = Path(raw_snapshot_directory) if raw_snapshot_directory is not None else DEFAULT_RAW_SNAPSHOT_DIRECTORY
     snapshots = sorted(directory.glob("sina-*.json"))
@@ -33,11 +33,10 @@ def latest_completed_sina_snapshot(
     moment: datetime,
     raw_snapshot_directory: str | Path | None = None,
 ) -> Path | None:
-    """Return the latest completed close or ``None`` when today's close needs a fresh capture.
+    """返回最近完整收盘快照；当天收盘后需要重新抓取时返回 None。
 
-    At or after 15:00 on an A-share weekday, a file captured before the
-    opening auction still represents yesterday's close. Returning ``None``
-    makes the API refresh the full snapshot rather than replaying stale data.
+    A 股交易日 15:00 以后，开盘前抓取的文件仍代表昨天收盘。
+    此时返回 None，要求 API 刷新全市场快照，避免继续回放旧数据。
     """
 
     try:
@@ -52,7 +51,7 @@ def latest_completed_sina_snapshot(
 
 
 def completed_close_date(observed_at: datetime) -> date:
-    """Translate a capture timestamp into the trading date of its completed bar."""
+    """把抓取时间转换为对应完整日 K 的交易日期。"""
 
     result = observed_at.date()
     local_time = observed_at.timetz().replace(tzinfo=None)
@@ -64,7 +63,7 @@ def completed_close_date(observed_at: datetime) -> date:
 
 
 def snapshot_close_date(snapshot_path: str | Path) -> date:
-    """Read a persisted snapshot's completed-bar date for API/UI labels."""
+    """读取持久化快照的完整日 K 日期，供 API 和界面显示。"""
 
     try:
         document = json.loads(Path(snapshot_path).read_text(encoding="utf-8"))
@@ -100,7 +99,7 @@ def resolve_provider(
     prefer_cached_sina_snapshot: bool = False,
     raw_snapshot_directory: str | Path | None = None,
 ) -> MarketDataProvider:
-    """Resolve a provider while keeping previous-close cache policy consistent."""
+    """按统一的前收盘缓存规则解析数据源。"""
 
     if provider_name.casefold() == SinaFreeProvider.name:
         if snapshot_path is None and prefer_cached_sina_snapshot:

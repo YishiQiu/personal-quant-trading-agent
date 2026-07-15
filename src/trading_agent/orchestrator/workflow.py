@@ -1,4 +1,4 @@
-"""Executable orchestration for the 14:30 two-stage candidate workflow."""
+"""14:30 两阶段候选股研究流程的可执行编排。"""
 
 from __future__ import annotations
 
@@ -24,11 +24,11 @@ from trading_agent.providers.base import CandidateResearchProvider, MarketDataPr
 
 
 class IncompleteResearchDataError(ValueError):
-    """A candidate cannot be ranked when required history is absent."""
+    """缺少必要历史数据时，候选股不能参与排名。"""
 
 
 class DailyResearchWorkflow:
-    """Runs deterministic funnels before any optional LLM call."""
+    """先运行确定性漏斗，再决定是否调用大模型。"""
 
     def __init__(
         self,
@@ -131,7 +131,7 @@ class DailyResearchWorkflow:
 
 
 def _news_evidence(item: object) -> str:
-    """Give the LLM bounded, attributable source context without inventing facts."""
+    """向大模型提供有边界、可追溯的来源上下文，不编造事实。"""
 
     from trading_agent.domain.models import NewsItem
 

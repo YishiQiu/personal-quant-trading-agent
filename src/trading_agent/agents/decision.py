@@ -1,4 +1,4 @@
-"""Deterministic final ranking; the LLM never owns the final decision."""
+"""确定性最终排序；大模型永远不掌握最终决定权。"""
 
 from __future__ import annotations
 

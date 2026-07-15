@@ -1,4 +1,4 @@
-"""Common structured output contract for future LangGraph nodes."""
+"""供后续 LangGraph 节点复用的统一结构化输出协议。"""
 
 from __future__ import annotations
 

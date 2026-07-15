@@ -1,3 +1,3 @@
-"""Personal Quant Trading Agent package."""
+"""个人量化交易研究智能体主包。"""
 
-__version__ = "1.0.0"
+__version__ = "1.1.0"

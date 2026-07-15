@@ -1,4 +1,4 @@
-"""Agent boundaries; only the deterministic scanner agent is implemented in phase one."""
+"""Agent 层边界；第一阶段优先实现确定性扫描 Agent。"""
 
 from trading_agent.agents.market_scanner import MarketScannerAgent
 from trading_agent.agents.catalyst import CatalystAgent

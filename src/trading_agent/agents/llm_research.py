@@ -1,4 +1,4 @@
-"""LLM boundary. A model is optional and must return structured, attributable data."""
+"""大模型调用边界；模型可选，但必须返回结构化、可追溯的数据。"""
 
 from __future__ import annotations
 
@@ -11,7 +11,7 @@ from trading_agent.domain.analysis import LlmResearchFinding, PatternCandidate
 class LlmResearchClient(ABC):
     @abstractmethod
     def research(self, candidate: PatternCandidate, evidence: tuple[str, ...]) -> LlmResearchFinding:
-        """Return validated research JSON. Network calls belong only in an adapter."""
+        """返回校验后的研究 JSON；网络调用只能放在适配器中。"""
 
 
 class LlmResearchAgent:
@@ -33,7 +33,7 @@ class LlmResearchAgent:
             )
         try:
             finding = self._client.research(candidate, upstream_evidence)
-        except Exception:  # A provider failure must not hide deterministic research evidence.
+        except Exception:  # 数据源失败时仍要保留已经得到的确定性研究证据。
             finding = LlmResearchFinding(False, None, "AI 辅助分析暂时不可用")
             return AgentOutput(
                 agent_name=self.name,

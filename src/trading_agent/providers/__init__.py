@@ -1,4 +1,4 @@
-"""Pluggable market-data provider interfaces and built-in adapters."""
+"""可插拔行情数据接口及内置适配器。"""
 
 from trading_agent.providers.base import CandidateResearchProvider, MarketDataProvider
 from trading_agent.providers.eastmoney import EastmoneyFreeProvider
