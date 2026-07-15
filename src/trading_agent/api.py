@@ -2,17 +2,19 @@
 
 from __future__ import annotations
 
-from dataclasses import asdict
+from dataclasses import asdict, replace
 from datetime import datetime
 from math import ceil
 from pathlib import Path
 
 from trading_agent.bootstrap import (
+    DEFAULT_SCANNER_CONFIG,
     build_daily_research_workflow,
     build_market_scanner_agent,
     build_pattern_gate,
     build_provider_registry,
 )
+from trading_agent.config import MarketScannerConfig, load_market_scanner_config
 from trading_agent.providers.eastmoney import FreeDataProviderError
 from trading_agent.providers.selection import (
     completed_close_date,
@@ -31,7 +33,7 @@ def create_app():  # type: ignore[no-untyped-def]
     except ImportError as exc:  # pragma: no cover - depends on optional extra
         raise RuntimeError('Install the API extra: pip install -e ".[api]"') from exc
 
-    app = FastAPI(title="Personal Quant Trading Agent", version="0.1.0")
+    app = FastAPI(title="Personal Quant Trading Agent", version="1.0.0")
     app.add_middleware(
         CORSMiddleware,
         allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
@@ -69,13 +71,40 @@ def create_app():  # type: ignore[no-untyped-def]
         )
         return snapshot_path, close_date
 
-    def pattern_payload(provider_name: str) -> dict[str, object]:
+    def request_scanner_config(
+        min_price: float,
+        max_price: float,
+        include_chinext: bool,
+        include_star_market: bool,
+    ) -> MarketScannerConfig:
+        if max_price <= min_price:
+            raise HTTPException(status_code=422, detail="最高价格必须大于最低价格")
+        return replace(
+            load_market_scanner_config(DEFAULT_SCANNER_CONFIG),
+            min_price=min_price,
+            max_price=max_price,
+            include_chinext=include_chinext,
+            include_star_market=include_star_market,
+        )
+
+    def filter_payload(config: MarketScannerConfig) -> dict[str, object]:
+        return {
+            "min_price": config.min_price,
+            "max_price": config.max_price,
+            "include_chinext": config.include_chinext,
+            "include_star_market": config.include_star_market,
+        }
+
+    def pattern_payload(
+        provider_name: str,
+        scanner_config: MarketScannerConfig,
+    ) -> dict[str, object]:
         """Run the two deterministic funnel stages without any history calls."""
 
         provider, snapshot_path = latest_close_provider(provider_name)
         quotes = provider.fetch_realtime_quotes()
         snapshot_path, close_date = snapshot_metadata(provider, snapshot_path, quotes)
-        scan_output = build_market_scanner_agent().run(quotes)
+        scan_output = build_market_scanner_agent(config=scanner_config).run(quotes)
         scan = scan_output.payload
         assert scan is not None
         patterns = build_pattern_gate().select(scan.candidates)
@@ -83,6 +112,7 @@ def create_app():  # type: ignore[no-untyped-def]
             "provider": provider.name,
             "snapshot": str(snapshot_path) if snapshot_path is not None else None,
             "close_date": close_date,
+            "filters": filter_payload(scanner_config),
             "scanned_count": scan.scanned_count,
             "observation_pool_count": len(scan.candidates),
             "pattern_match_count": len(patterns),
@@ -103,10 +133,21 @@ def create_app():  # type: ignore[no-untyped-def]
         }
 
     @app.post("/api/v1/market-scan/{provider_name}")
-    def market_scan(provider_name: str) -> dict[str, object]:
+    def market_scan(
+        provider_name: str,
+        min_price: float = Query(default=3.0, ge=0),
+        max_price: float = Query(default=100.0, gt=0),
+        include_chinext: bool = True,
+        include_star_market: bool = True,
+    ) -> dict[str, object]:
+        scanner_config = request_scanner_config(
+            min_price, max_price, include_chinext, include_star_market
+        )
         try:
             provider = build_provider_registry().create(provider_name)
-            output = build_market_scanner_agent().run(provider.fetch_realtime_quotes())
+            output = build_market_scanner_agent(config=scanner_config).run(
+                provider.fetch_realtime_quotes()
+            )
         except FreeDataProviderError as exc:
             raise HTTPException(status_code=503, detail=str(exc)) from exc
         except ValueError as exc:
@@ -115,15 +156,25 @@ def create_app():  # type: ignore[no-untyped-def]
         assert result is not None
         return {
             "agent": output.agent_name,
+            "filters": filter_payload(scanner_config),
             "scanned_count": result.scanned_count,
             "candidates": [asdict(candidate) for candidate in result.candidates],
         }
 
     @app.post("/api/v1/research/{provider_name}")
-    def research(provider_name: str) -> dict[str, object]:
+    def research(
+        provider_name: str,
+        min_price: float = Query(default=3.0, ge=0),
+        max_price: float = Query(default=100.0, gt=0),
+        include_chinext: bool = True,
+        include_star_market: bool = True,
+    ) -> dict[str, object]:
+        scanner_config = request_scanner_config(
+            min_price, max_price, include_chinext, include_star_market
+        )
         try:
             provider, snapshot_path = latest_close_provider(provider_name)
-            result = build_daily_research_workflow().run(provider)
+            result = build_daily_research_workflow(scanner_config=scanner_config).run(provider)
             snapshot_path, close_date = snapshot_metadata(provider, snapshot_path)
         except FreeDataProviderError as exc:
             raise HTTPException(status_code=503, detail=str(exc)) from exc
@@ -133,6 +184,7 @@ def create_app():  # type: ignore[no-untyped-def]
             "provider": provider.name,
             "snapshot": str(snapshot_path) if snapshot_path is not None else None,
             "close_date": close_date,
+            "filters": filter_payload(scanner_config),
             "scanned_count": result.scanned_count,
             "observation_pool_count": result.observation_pool_count,
             "research_pool_count": result.research_pool_count,
@@ -142,11 +194,20 @@ def create_app():  # type: ignore[no-untyped-def]
         }
 
     @app.get("/api/v1/pattern-scan/{provider_name}")
-    def pattern_scan(provider_name: str) -> dict[str, object]:
+    def pattern_scan(
+        provider_name: str,
+        min_price: float = Query(default=3.0, ge=0),
+        max_price: float = Query(default=100.0, gt=0),
+        include_chinext: bool = True,
+        include_star_market: bool = True,
+    ) -> dict[str, object]:
         """Return every bullish perfect-doji/hammer match from the latest close."""
 
         try:
-            return pattern_payload(provider_name)
+            scanner_config = request_scanner_config(
+                min_price, max_price, include_chinext, include_star_market
+            )
+            return pattern_payload(provider_name, scanner_config)
         except FreeDataProviderError as exc:
             raise HTTPException(status_code=503, detail=str(exc)) from exc
         except ValueError as exc:
@@ -159,6 +220,10 @@ def create_app():  # type: ignore[no-untyped-def]
         page_size: int = Query(default=50, ge=10, le=200),
         query: str = "",
         scope: str = "all",
+        min_price: float = Query(default=3.0, ge=0),
+        max_price: float = Query(default=100.0, gt=0),
+        include_chinext: bool = True,
+        include_star_market: bool = True,
     ) -> dict[str, object]:
         """Read the full cached universe or the price/base-rule-qualified pool.
 
@@ -172,11 +237,15 @@ def create_app():  # type: ignore[no-untyped-def]
                 detail="scope must be either 'all' or 'base_candidates'",
             )
 
+        scanner_config = request_scanner_config(
+            min_price, max_price, include_chinext, include_star_market
+        )
+
         try:
             provider, snapshot_path = latest_close_provider(provider_name)
             quotes = tuple(provider.fetch_realtime_quotes())
             snapshot_path, close_date = snapshot_metadata(provider, snapshot_path, quotes)
-            output = build_market_scanner_agent().run(quotes)
+            output = build_market_scanner_agent(config=scanner_config).run(quotes)
         except FreeDataProviderError as exc:
             raise HTTPException(status_code=503, detail=str(exc)) from exc
         except ValueError as exc:
@@ -221,6 +290,7 @@ def create_app():  # type: ignore[no-untyped-def]
             "provider": provider.name,
             "snapshot": str(snapshot_path) if snapshot_path is not None else None,
             "close_date": close_date,
+            "filters": filter_payload(scanner_config),
             "source_count": len(quotes),
             "eligible_count": len(quotes) - len(scan.rejections),
             "observation_count": len(scan.candidates),

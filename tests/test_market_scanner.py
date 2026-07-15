@@ -57,3 +57,40 @@ def test_scanner_keeps_every_eligible_stock_when_limit_is_zero(scanner_config, q
     )
 
     assert [candidate.quote.code for candidate in result.candidates] == ["000002", "000001"]
+
+
+def test_scanner_can_exclude_chinext_and_star_market(scanner_config, quote_factory) -> None:
+    config = replace(scanner_config, include_chinext=False, include_star_market=False)
+
+    result = MarketScanner(config).scan(
+        [
+            quote_factory(code="000001"),
+            quote_factory(code="300001"),
+            quote_factory(code="301001"),
+            quote_factory(code="688001"),
+            quote_factory(code="689001"),
+        ]
+    )
+
+    assert [candidate.quote.code for candidate in result.candidates] == ["000001"]
+    reasons = {rejection.quote.code: rejection.reasons for rejection in result.rejections}
+    assert reasons["300001"] == ("chinext_excluded",)
+    assert reasons["301001"] == ("chinext_excluded",)
+    assert reasons["688001"] == ("star_market_excluded",)
+    assert reasons["689001"] == ("star_market_excluded",)
+
+
+def test_scanner_applies_user_price_range(scanner_config, quote_factory) -> None:
+    config = replace(scanner_config, min_price=10.0, max_price=20.0, max_candidates=0)
+
+    result = MarketScanner(config).scan(
+        [
+            quote_factory(code="000001", last_price=9.99),
+            quote_factory(code="000002", last_price=10.0),
+            quote_factory(code="000003", last_price=20.0),
+            quote_factory(code="000004", last_price=20.01),
+        ]
+    )
+
+    assert {candidate.quote.code for candidate in result.candidates} == {"000002", "000003"}
+    assert {rejection.quote.code for rejection in result.rejections} == {"000001", "000004"}

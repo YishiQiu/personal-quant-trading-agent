@@ -9,6 +9,13 @@ export interface Recommendation {
   news: NewsItem[];
 }
 
+export interface ScanFilters {
+  min_price: number;
+  max_price: number;
+  include_chinext: boolean;
+  include_star_market: boolean;
+}
+
 export interface NewsItem {
   headline: string;
   published_at: string;
@@ -21,6 +28,7 @@ export interface ResearchResponse {
   provider: string;
   snapshot: string | null;
   close_date: string;
+  filters: ScanFilters;
   scanned_count: number;
   observation_pool_count: number;
   research_pool_count: number;
@@ -45,6 +53,7 @@ export interface PatternScanResponse {
   provider: string;
   snapshot: string | null;
   close_date: string;
+  filters: ScanFilters;
   scanned_count: number;
   observation_pool_count: number;
   pattern_match_count: number;
@@ -65,6 +74,7 @@ export interface UniverseResponse {
   provider: string;
   snapshot: string | null;
   close_date: string;
+  filters: ScanFilters;
   source_count: number;
   eligible_count: number;
   observation_count: number;

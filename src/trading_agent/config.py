@@ -18,6 +18,8 @@ class MarketScannerConfig:
     min_turnover_amount: float
     max_abs_pct_change: float
     max_candidates: int
+    include_chinext: bool = True
+    include_star_market: bool = True
 
     @classmethod
     def from_mapping(cls, raw: Mapping[str, Any]) -> "MarketScannerConfig":
@@ -30,6 +32,8 @@ class MarketScannerConfig:
                 min_turnover_amount=float(raw["min_turnover_amount"]),
                 max_abs_pct_change=float(raw["max_abs_pct_change"]),
                 max_candidates=int(raw["max_candidates"]),
+                include_chinext=bool(raw.get("include_chinext", True)),
+                include_star_market=bool(raw.get("include_star_market", True)),
             )
         except (KeyError, TypeError, ValueError) as exc:
             raise ValueError("Invalid market_scanner configuration") from exc

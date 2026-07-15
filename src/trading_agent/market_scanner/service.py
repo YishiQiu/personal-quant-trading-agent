@@ -47,6 +47,10 @@ class MarketScanner:
             reasons.append("delisting")
         if not self._config.min_price <= quote.last_price <= self._config.max_price:
             reasons.append("price_out_of_range")
+        if not self._config.include_chinext and is_chinext_code(quote.code):
+            reasons.append("chinext_excluded")
+        if not self._config.include_star_market and is_star_market_code(quote.code):
+            reasons.append("star_market_excluded")
         if quote.turnover_amount < self._config.min_turnover_amount:
             reasons.append("insufficient_turnover")
         if abs(quote.pct_change) > self._config.max_abs_pct_change:
@@ -56,3 +60,17 @@ class MarketScanner:
     def _liquidity_score(self, quote: QuoteSnapshot) -> float:
         # Amount is in CNY. The log keeps a few ultra-liquid names from dominating the ranking.
         return round((quote.turnover_amount / self._config.min_turnover_amount) ** 0.5, 4)
+
+
+def is_chinext_code(code: str) -> bool:
+    """Return whether a normalized A-share code belongs to ChiNext."""
+
+    normalized = code.strip()[-6:]
+    return normalized.startswith(("300", "301"))
+
+
+def is_star_market_code(code: str) -> bool:
+    """Return whether a normalized A-share code belongs to the STAR Market."""
+
+    normalized = code.strip()[-6:]
+    return normalized.startswith(("688", "689"))
