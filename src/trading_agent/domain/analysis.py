@@ -1,4 +1,4 @@
-"""Typed, auditable products of the candidate research workflow."""
+"""候选股研究流程生成的强类型、可追溯结果。"""
 
 from __future__ import annotations
 
@@ -67,8 +67,7 @@ class Recommendation:
     reasons: tuple[str, ...]
     risks: tuple[str, ...]
     vetoed: bool = False
-    # Source-attributed records are carried through to the API so the UI can
-    # link users to primary evidence instead of presenting LLM-only claims.
+    # 带来源的记录会一直传到 API，让前端可以展示原始证据，而不是只展示模型结论。
     news: tuple[NewsItem, ...] = field(default_factory=tuple)
 
 
@@ -79,6 +78,5 @@ class WorkflowResult:
     research_pool_count: int
     recommendations: tuple[Recommendation, ...]
     vetoed: tuple[Recommendation, ...] = field(default_factory=tuple)
-    # Every candidate that reached historical/news/LLM research, ordered by
-    # final score. ``recommendations`` remains the concise Top-N decision list.
+    # 所有进入历史、新闻和模型研究的候选股按最终得分排列；recommendations 只保留 Top N。
     research_results: tuple[Recommendation, ...] = field(default_factory=tuple)

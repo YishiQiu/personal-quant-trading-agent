@@ -1,4 +1,4 @@
-"""Tushare ``major_news`` adapter for corroborating candidate-level catalysts."""
+"""使用 Tushare ``major_news`` 交叉核对候选股催化信息。"""
 
 from __future__ import annotations
 
@@ -17,7 +17,7 @@ JsonPoster = Callable[[str, Mapping[str, object]], object]
 
 
 class TushareMajorNewsProvider(NewsProvider):
-    """Fetch one bounded source feed, then match only exact ticker/name mentions."""
+    """读取范围受限的单一资讯源，只匹配明确出现的股票代码或名称。"""
 
     name = "tushare_major_news"
 
@@ -74,7 +74,7 @@ def _post_json(url: str, payload: Mapping[str, object]) -> object:
         headers={"Content-Type": "application/json", "User-Agent": "PersonalQuantTradingAgent/0.1"},
         method="POST",
     )
-    with urlopen(request, timeout=20) as response:  # noqa: S310 - configured HTTPS endpoint
+    with urlopen(request, timeout=20) as response:  # noqa: S310 - 配置项限定为 HTTPS 地址
         return json.loads(response.read().decode("utf-8"))
 
 

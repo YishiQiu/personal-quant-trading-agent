@@ -1,4 +1,4 @@
-"""Vendor-neutral news boundaries used after the deterministic pattern funnel."""
+"""确定性形态筛选完成后使用的、与数据厂商无关的新闻接口。"""
 
 from __future__ import annotations
 
@@ -11,7 +11,7 @@ from trading_agent.domain.models import NewsItem
 
 
 class NewsProviderError(RuntimeError):
-    """A bounded news-provider failure that must not erase market research."""
+    """可控的新闻源异常，不能因此丢弃已经完成的行情研究。"""
 
 
 @dataclass(frozen=True, slots=True)
@@ -21,10 +21,10 @@ class NewsTarget:
 
 
 class NewsProvider(ABC):
-    """One source of attributable candidate-level news or announcements."""
+    """为候选股提供可追溯新闻或公告的单一数据源。"""
 
     name: str
 
     @abstractmethod
     def fetch(self, targets: Sequence[NewsTarget], since: datetime, until: datetime) -> Sequence[NewsItem]:
-        """Return source-attributed items; providers must not invent ticker mappings."""
+        """返回带来源的记录；数据源不得猜测股票映射关系。"""

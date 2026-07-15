@@ -1,4 +1,4 @@
-"""Intraday provisional candle calculations for the 14:30 snapshot."""
+"""用于 14:30 快照的临时 K 线数学计算。"""
 
 from __future__ import annotations
 
@@ -8,7 +8,7 @@ from trading_agent.domain.models import QuoteSnapshot
 
 
 def calculate_candle_metrics(quote: QuoteSnapshot, config: PatternGateConfig) -> CandleMetrics | None:
-    """Recognize large red doji/hammer shapes from one completed daily bar."""
+    """从单根完整日 K 中识别阳线大十字和锤子线。"""
 
     if None in (quote.open_price, quote.high_price, quote.low_price):
         return None

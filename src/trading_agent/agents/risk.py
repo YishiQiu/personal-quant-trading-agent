@@ -1,4 +1,4 @@
-"""Capital-flow and fundamental risk agent with an auditable veto path."""
+"""分析资金流和基本面风险，并提供可追溯的否决路径。"""
 
 from __future__ import annotations
 

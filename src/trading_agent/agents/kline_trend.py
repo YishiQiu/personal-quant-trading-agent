@@ -1,4 +1,4 @@
-"""Historical K-line and trend analysis for pattern-gated candidates only."""
+"""只对通过形态门控的候选股分析历史 K 线和趋势。"""
 
 from __future__ import annotations
 

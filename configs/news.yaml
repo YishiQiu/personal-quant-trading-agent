@@ -1,6 +1,4 @@
-# Candidate-level news enrichment.  Providers never participate in the
-# all-market scanner; they run only after the pattern gate has formed the
-# research pool.
+# 新闻只补充候选股信息，不参与全市场扫描；只有形态筛选形成研究池后才会调用。
 news:
   enabled: true
   lookback_hours: 30
@@ -11,13 +9,11 @@ news:
     page_size: 10
     request_interval_seconds: 0.25
   eastmoney_stock_news:
-    # Free public-web fallback, queried only for the research pool.  It has no
-    # SLA or commercial data licence; failures are safely ignored.
+    # 免费公开网页备用源，只查询研究池。它没有 SLA 或商业授权保证，失败时安全降级。
     enabled: true
     request_interval_seconds: 0.4
   tushare:
-    # major_news needs a separate paid permission, so keep it disabled unless
-    # the account is explicitly granted access.
+    # major_news 需要单独的付费权限，账号未明确开通时保持关闭。
     enabled: false
     api_key_env: TUSHARE_TOKEN
     source: 财联社

@@ -9,12 +9,13 @@
 [![Python](https://img.shields.io/badge/Python-3.11%2B-15314f?style=flat-square&logo=python&logoColor=white)](https://www.python.org/)
 [![React](https://img.shields.io/badge/React-18-15314f?style=flat-square&logo=react&logoColor=white)](https://react.dev/)
 [![License](https://img.shields.io/badge/License-MIT-15314f?style=flat-square)](LICENSE)
+[![Use this template](https://img.shields.io/badge/Use_this_template-创建自己的版本-aa8448?style=flat-square&logo=github&logoColor=white)](https://github.com/YishiQiu/personal-quant-trading-agent/generate)
 
 **面向 A 股尾盘决策的个人量化研究智能体**
 
 不是自动交易机器人。它负责浏览市场、整理证据与解释机会，最终决定始终由人完成。
 
-[快速开始](#-快速开始) · [v1.0 功能](#-v100--第一个稳定版本) · [算法定义](#-形态算法) · [数据边界](#-数据与模型) · [路线图](#-路线图)
+[快速开始](#-快速开始) · [创建自己的版本](#-创建自己的版本) · [算法定义](#-形态算法) · [数据边界](#-数据与模型) · [路线图](#-路线图)
 
 </div>
 
@@ -29,17 +30,17 @@
 
 ![Personal Quant Trading Agent 研究工作台](docs/assets/dashboard.png)
 
-## ✦ v1.0.0 — 第一个稳定版本
+## ✦ v1.1.0 — 中文化与模板化
 
-这次版本把“固定条件扫描”升级为真正可操作的个人研究工作台。
+这一版把代码说明统一为自然中文，并整理出清晰的复刻入口。在不改变选股逻辑的前提下，别人可以更快读懂、运行和改造成自己的研究项目。
 
-| 新能力 | 实际行为 |
+| 这一版做了什么 | 实际效果 |
 | --- | --- |
-| 自定义价格范围 | 在界面直接设置最低价与最高价，参数由后端规则层执行 |
-| 板块范围开关 | 可选择是否纳入创业板 `300/301`、科创板 `688/689` |
-| 条件贯穿全流程 | 形态筛选、全市场审计与深度研究始终复用同一组条件 |
-| 可解释结果 | 展示扫描规模、排除原因、形态比例和本次已应用条件 |
-| 工程化发布 | 34 项测试、类型检查、Ruff、前端生产构建与 GitHub CI |
+| 注释与说明中文化 | 模块、类、关键算法和配置说明更适合中文开发者阅读 |
+| 品牌配置集中管理 | 页面名称与首屏文案统一放在 `frontend/src/branding.ts` |
+| 改版指南 | 从换品牌、调策略到接入 Provider，都有对应修改位置 |
+| GitHub 项目模板 | 点击 **Use this template** 即可创建一份独立的新仓库 |
+| 版本统一 | Python 包、API、前端和发布记录统一为 `v1.1.0` |
 
 > [!NOTE]
 > 默认范围为 3–100 元并纳入创业板、科创板。主板与北交所默认保留；所有设置都可以在扫描前调整。
@@ -103,11 +104,28 @@ trading-agent research --provider sina_free
 
 </details>
 
+## 🛠 创建自己的版本
+
+不需要从头拆代码。点击下面的按钮，GitHub 会用当前项目创建一份没有原提交历史的新仓库。
+
+<p align="center">
+  <a href="https://github.com/YishiQiu/personal-quant-trading-agent/generate"><strong>使用这个模板创建项目 →</strong></a>
+</p>
+
+创建后按三步开始改版：
+
+1. 在 [`frontend/src/branding.ts`](frontend/src/branding.ts) 修改名称、标记和首屏文案。
+2. 在 [`configs/`](configs/) 调整自己的价格、板块、形态和研究参数。
+3. 按 [`复刻与改版指南`](docs/customization.md) 替换数据源、Agent 或页面。
+
+> [!TIP]
+> 先用 `demo` 数据源跑通页面，再接入自己的行情服务。这样可以把界面问题与数据接口问题分开排查。
+
 ## 📐 形态算法
 
 全部使用 OHLC 数学计算，不使用图片识别。设总振幅 `R = H - L`，两类形态都要求 `C > O` 且 `R / O >= 3%`。
 
-| 形态 | v1.0 默认定义 |
+| 形态 | 默认定义 |
 | --- | --- |
 | 阳线完美十字 | `实体 / R ≤ 2%`；上下影各占 `R ≥ 45%`；影线差 `≤ 6%` |
 | 阳线锤子 | 实体占 `R` 的 `3%–30%`；下影至少为实体 `2 倍` 且占 `R ≥ 60%`；上影不超过实体 `0.5 倍` |
@@ -162,7 +180,7 @@ TradingAgent/
 └── tests/                      # 单元测试与工作流测试
 ```
 
-进一步阅读：[`架构说明`](docs/architecture.md) · [`工作流说明`](docs/workflow.md) · [`数据接入清单`](docs/data-requirements.md)
+进一步阅读：[`复刻与改版`](docs/customization.md) · [`架构说明`](docs/architecture.md) · [`工作流说明`](docs/workflow.md) · [`数据接入清单`](docs/data-requirements.md)
 
 </details>
 

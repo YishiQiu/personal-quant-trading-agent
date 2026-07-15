@@ -1,4 +1,4 @@
-"""Optional AKShare adapter for the 14:30 all-market snapshot."""
+"""用于 14:30 全市场快照的可选 AKShare 适配器。"""
 
 from __future__ import annotations
 
@@ -10,14 +10,14 @@ from trading_agent.providers.base import CandidateResearchProvider, MarketDataPr
 
 
 class AkShareMarketDataProvider(MarketDataProvider, CandidateResearchProvider):
-    """Normalizes ``stock_zh_a_spot_em`` without leaking DataFrames upstream."""
+    """标准化 stock_zh_a_spot_em，并避免向上层暴露 DataFrame。"""
 
     name = "akshare"
 
     def fetch_realtime_quotes(self) -> tuple[QuoteSnapshot, ...]:
         try:
             import akshare as ak
-        except ImportError as exc:  # pragma: no cover - optional integration
+        except ImportError as exc:  # pragma: no cover - 可选集成
             raise RuntimeError('Install the data extra: pip install -e ".[data]"') from exc
 
         dataframe = ak.stock_zh_a_spot_em()
@@ -48,11 +48,11 @@ class AkShareMarketDataProvider(MarketDataProvider, CandidateResearchProvider):
     def fetch_research_contexts(
         self, codes: tuple[str, ...] | list[str], as_of: datetime
     ) -> dict[str, ResearchContext]:
-        """Fetch completed daily bars only; enrichment is supplied by later provider plugins."""
+        """只读取完整日 K；其他研究信息由后续数据插件补充。"""
 
         try:
             import akshare as ak
-        except ImportError as exc:  # pragma: no cover - optional integration
+        except ImportError as exc:  # pragma: no cover - 可选集成
             raise RuntimeError('Install the data extra: pip install -e ".[data]"') from exc
         start_date = (as_of - timedelta(days=400)).strftime("%Y%m%d")
         end_date = as_of.strftime("%Y%m%d")

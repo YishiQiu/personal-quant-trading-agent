@@ -1,9 +1,8 @@
-"""Candidate-level announcements from the public CNINFO disclosure service.
+"""从巨潮资讯公开披露服务获取候选股公告。
 
-CNINFO is the legally mandated disclosure platform.  This adapter uses its
-public web endpoint at a deliberately low request rate; it is a fallback, not
-a contracted market-data API.  Every returned record keeps the official PDF
-link so downstream analysis can remain auditable.
+巨潮资讯是法定信息披露平台。本适配器以较低频率访问其公开网页接口，
+定位是备用来源，并非有服务协议保障的商业行情接口。每条记录都会保留
+官方 PDF 链接，方便后续分析核对原文。
 """
 
 from __future__ import annotations
@@ -26,7 +25,7 @@ JsonFetcher = Callable[[str], object]
 
 
 class CninfoPublicDisclosureProvider(NewsProvider):
-    """Fetch company announcements only for the already-shortlisted symbols."""
+    """只为已经入围的股票查询公司公告。"""
 
     name = "cninfo_public_disclosure"
     _ENDPOINT = "https://www.cninfo.com.cn/new/hisAnnouncement/query"
@@ -78,8 +77,7 @@ class CninfoPublicDisclosureProvider(NewsProvider):
             "column": _exchange_column(target.code),
             "tabName": "fulltext",
             "plate": "",
-            # CNINFO expects its internal organization ID, not a company name.
-            # Sending the name makes the endpoint silently ignore the filter.
+            # 巨潮接口需要内部组织编号，不能传公司名称；传名称时接口会悄悄忽略筛选条件。
             "stock": f"{target.code},{organization_id}",
             "searchkey": "",
             "secid": "",
@@ -134,7 +132,7 @@ def _post_json(url: str, payload: Mapping[str, object]) -> object:
         },
         method="POST",
     )
-    with urlopen(request, timeout=20) as response:  # noqa: S310 - fixed public endpoint
+    with urlopen(request, timeout=20) as response:  # noqa: S310 - 地址是固定的公开接口
         return json.loads(response.read().decode("utf-8"))
 
 
@@ -147,7 +145,7 @@ def _get_json(url: str) -> object:
             "User-Agent": "PersonalQuantTradingAgent/0.1 (+local-research)",
         },
     )
-    with urlopen(request, timeout=20) as response:  # noqa: S310 - fixed public endpoint
+    with urlopen(request, timeout=20) as response:  # noqa: S310 - 地址是固定的公开接口
         return json.loads(response.read().decode("utf-8"))
 
 
@@ -159,7 +157,7 @@ def _items_from_document(document: JsonObject, target: NewsTarget) -> tuple[News
     for row in rows:
         if not isinstance(row, Mapping):
             continue
-        # Never accept a server-side filter failure as candidate evidence.
+        # 服务端筛选一旦失效，返回内容就不能当作候选股证据。
         returned_code = str(row.get("secCode", "")).strip().zfill(6)
         if returned_code != target.code:
             continue

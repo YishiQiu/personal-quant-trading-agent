@@ -1,4 +1,4 @@
-"""Composition root: the only place that wires implementations together."""
+"""项目装配入口：所有具体实现只在这里组合。"""
 
 from __future__ import annotations
 
@@ -57,13 +57,13 @@ def build_market_scanner_agent(
 
 
 def build_pattern_gate(workflow_config_path: str | Path = DEFAULT_WORKFLOW_CONFIG) -> PatternGate:
-    """Build the deterministic candle-pattern gate for the first visible funnel."""
+    """构建第一层可见漏斗使用的确定性 K 线形态门控。"""
 
     return PatternGate(load_application_config(workflow_config_path).pattern_gate)
 
 
 def build_llm_research_agent(config_path: str | Path = DEFAULT_LLM_CONFIG) -> LlmResearchAgent:
-    """Build the configured provider only when its key exists in the server environment."""
+    """只有服务端环境中存在密钥时，才装配已经配置的模型服务。"""
 
     load_dotenv(override=False)
     config = load_llm_provider_config(config_path)
@@ -75,7 +75,7 @@ def build_llm_research_agent(config_path: str | Path = DEFAULT_LLM_CONFIG) -> Ll
 
 
 def build_news_enricher(config_path: str | Path) -> NewsEnricher | None:
-    """Build optional source collectors; a missing Tushare token never disables CNINFO."""
+    """装配可选新闻源；缺少 Tushare 密钥不会影响巨潮公告。"""
 
     load_dotenv(override=False)
     config = load_news_config(config_path)
@@ -114,7 +114,7 @@ def build_daily_research_workflow(
     *,
     scanner_config: MarketScannerConfig | None = None,
 ) -> DailyResearchWorkflow:
-    """Build the complete 14:30 research workflow with optional source-attributed news."""
+    """构建完整的 14:30 研究流程，并按配置补充带来源的新闻。"""
 
     application_config = load_application_config(workflow_config_path)
     return DailyResearchWorkflow(

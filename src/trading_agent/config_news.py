@@ -1,4 +1,4 @@
-"""Typed configuration for candidate-level news and announcement enrichment."""
+"""候选股新闻和公告补充模块的强类型配置。"""
 
 from __future__ import annotations
 

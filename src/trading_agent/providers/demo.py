@@ -1,4 +1,4 @@
-"""Deterministic provider for local development and API smoke tests."""
+"""用于本地开发和 API 冒烟测试的确定性数据源。"""
 
 from __future__ import annotations
 

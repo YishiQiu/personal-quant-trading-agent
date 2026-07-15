@@ -1,4 +1,4 @@
-"""Volume context analysis; intraday normalization is an explicit future extension."""
+"""成交量上下文分析；盘中归一化留作后续明确扩展。"""
 
 from __future__ import annotations
 
@@ -12,8 +12,7 @@ class VolumeAgent:
 
     def run(self, candidate: PatternCandidate, context: ResearchContext) -> AgentOutput[VolumeFinding]:
         quote = candidate.candidate.quote
-        # A completed daily bar may already exist as the final history row;
-        # compare it with the preceding five days instead of including itself.
+        # 完整日 K 可能已经是历史序列最后一行，因此应与之前五天比较，不能把自身算进去。
         bars = (
             context.daily_bars[-6:-1]
             if quote.is_final_bar and len(context.daily_bars) >= 6

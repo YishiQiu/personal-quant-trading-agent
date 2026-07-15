@@ -1,4 +1,4 @@
-# Python
+# Python 运行环境与构建产物
 .venv/
 __pycache__/
 *.py[cod]
@@ -12,22 +12,22 @@ dist/
 build/
 *.egg-info/
 
-# Local secrets
+# 本地密钥
 .env*
 !.env.example
 
-# Runtime data and logs
+# 运行数据与日志
 data/
 *.db
 *.sqlite
 *.sqlite3
 *.log
 
-# Frontend
+# 前端依赖与构建产物
 frontend/node_modules/
 frontend/dist/
 
-# Editors and operating systems
+# 编辑器与操作系统文件
 .DS_Store
 .idea/
 .vscode/

@@ -1,4 +1,4 @@
-"""Configuration for the optional, provider-pluggable LLM research stage."""
+"""可选大模型研究阶段的配置，模型服务可以替换。"""
 
 from __future__ import annotations
 

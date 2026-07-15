@@ -1,4 +1,4 @@
-"""Backward-compatible Kimi alias for the generic OpenAI-compatible adapter."""
+"""为兼容旧配置保留的 Kimi 适配器别名。"""
 
 from trading_agent.llm.openai_compatible import (
     LlmProviderResearchError as KimiResearchError,

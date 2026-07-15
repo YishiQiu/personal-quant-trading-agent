@@ -1,4 +1,4 @@
-"""Configuration loading kept outside business logic."""
+"""集中读取配置，避免业务逻辑直接依赖配置文件格式。"""
 
 from __future__ import annotations
 
@@ -45,7 +45,7 @@ class MarketScannerConfig:
 
 
 def load_market_scanner_config(path: str | Path) -> MarketScannerConfig:
-    """Load a market scanner configuration from a YAML document."""
+    """从 YAML 文件读取市场扫描配置。"""
 
     with Path(path).open(encoding="utf-8") as config_file:
         raw = yaml.safe_load(config_file)

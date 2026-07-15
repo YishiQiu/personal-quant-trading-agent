@@ -1,4 +1,4 @@
-"""Sector and attributable-news analysis for shortlisted candidates."""
+"""分析入围股票的板块信息和可追溯新闻。"""
 
 from __future__ import annotations
 

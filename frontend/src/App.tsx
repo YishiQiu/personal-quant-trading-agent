@@ -1,6 +1,7 @@
 import { useState } from "react";
 
 import { getUniverse, runPatternScan, runPreviousCloseResearch } from "./api";
+import { appBrand } from "./branding";
 import type {
   PatternCandidate,
   PatternScanResponse,
@@ -224,8 +225,8 @@ export default function App() {
     <main className="app-shell">
       <header className="topbar">
         <div className="brand">
-          <span className="brand-mark"><i />Q</span>
-          <div><p>A 股短线研究</p><h1>量化收盘研究室</h1></div>
+          <span className="brand-mark"><i />{appBrand.mark}</span>
+          <div><p>{appBrand.category}</p><h1>{appBrand.productName}</h1></div>
         </div>
         <div className="topbar-status">
           <span className="pulse" />
@@ -236,9 +237,9 @@ export default function App() {
 
       <section className="hero-panel">
         <div className="hero-copy-block">
-          <p className="eyebrow">每日收盘研究</p>
-          <h2>从全市场，找到<em>少数机会</em></h2>
-          <p>自动采用最近一个完整交易日的收盘数据。先扫描全市场，再对阳线完美十字与锤子线命中股补充历史行情、新闻公告和风险判断。</p>
+          <p className="eyebrow">{appBrand.heroEyebrow}</p>
+          <h2>{appBrand.heroLead}<em>{appBrand.heroEmphasis}</em></h2>
+          <p>{appBrand.heroDescription}</p>
           <div className="hero-notes"><span>{draftFilters.min_price}–{draftFilters.max_price} 元</span><span>{boardSummary(draftFilters)}</span><span>完美十字 · 锤子线</span></div>
         </div>
         <div className="hero-action">
@@ -260,7 +261,7 @@ export default function App() {
         </div>
       </section>
 
-      {state === "idle" && <section className="empty-panel"><div className="empty-icon">Q</div><p>今日研究尚未开始</p><span>点击“开始扫描”，读取最近一个完整收盘的全市场快照。</span></section>}
+      {state === "idle" && <section className="empty-panel"><div className="empty-icon">{appBrand.mark}</div><p>今日研究尚未开始</p><span>点击“开始扫描”，读取最近一个完整收盘的全市场快照。</span></section>}
       {state === "running" && <section className="empty-panel loading-panel"><span className="loader" /><p>正在构建今日研究宇宙</p><span>读取收盘快照 · 初筛 · 计算十字星 / 锤头线</span></section>}
       {state === "failed" && <section className="empty-panel error-panel" role="alert"><p>本次扫描未完成</p><span>{error}</span><small>收盘后会优先刷新当天快照；若公开数据源未返回完整数据，会保留上次成功结果而不生成推荐。</small></section>}
 

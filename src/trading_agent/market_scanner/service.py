@@ -1,4 +1,4 @@
-"""Fast deterministic filtering; deliberately no LLM calls live here."""
+"""快速确定性筛选；这一层明确禁止调用大模型。"""
 
 from __future__ import annotations
 
@@ -58,19 +58,19 @@ class MarketScanner:
         return reasons
 
     def _liquidity_score(self, quote: QuoteSnapshot) -> float:
-        # Amount is in CNY. The log keeps a few ultra-liquid names from dominating the ranking.
+        # 成交额单位为人民币；开平方可以避免少数超高流动性股票完全主导排序。
         return round((quote.turnover_amount / self._config.min_turnover_amount) ** 0.5, 4)
 
 
 def is_chinext_code(code: str) -> bool:
-    """Return whether a normalized A-share code belongs to ChiNext."""
+    """判断标准化 A 股代码是否属于创业板。"""
 
     normalized = code.strip()[-6:]
     return normalized.startswith(("300", "301"))
 
 
 def is_star_market_code(code: str) -> bool:
-    """Return whether a normalized A-share code belongs to the STAR Market."""
+    """判断标准化 A 股代码是否属于科创板。"""
 
     normalized = code.strip()[-6:]
     return normalized.startswith(("688", "689"))

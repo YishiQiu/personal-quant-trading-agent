@@ -1,4 +1,4 @@
-"""Optional FastAPI application, loaded only when the api extra is installed."""
+"""可选 FastAPI 应用；只有安装 api 依赖组后才会加载。"""
 
 from __future__ import annotations
 
@@ -7,6 +7,7 @@ from datetime import datetime
 from math import ceil
 from pathlib import Path
 
+from trading_agent import __version__
 from trading_agent.bootstrap import (
     DEFAULT_SCANNER_CONFIG,
     build_daily_research_workflow,
@@ -30,10 +31,10 @@ def create_app():  # type: ignore[no-untyped-def]
     try:
         from fastapi import FastAPI, HTTPException, Query
         from fastapi.middleware.cors import CORSMiddleware
-    except ImportError as exc:  # pragma: no cover - depends on optional extra
+    except ImportError as exc:  # pragma: no cover - 依赖可选安装项
         raise RuntimeError('Install the API extra: pip install -e ".[api]"') from exc
 
-    app = FastAPI(title="Personal Quant Trading Agent", version="1.0.0")
+    app = FastAPI(title="Personal Quant Trading Agent", version=__version__)
     app.add_middleware(
         CORSMiddleware,
         allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"],
@@ -59,7 +60,7 @@ def create_app():  # type: ignore[no-untyped-def]
         return provider, snapshot_path
 
     def snapshot_metadata(provider, snapshot_path: Path | None, quotes=()):  # type: ignore[no-untyped-def]
-        """Resolve the close date after a fresh live capture, for display and replay."""
+        """在最新抓取后确定收盘日期，供界面展示和历史回放使用。"""
 
         if provider.name == SinaFreeProvider.name and snapshot_path is None:
             if not quotes or all(quote.is_final_bar for quote in quotes):
@@ -99,7 +100,7 @@ def create_app():  # type: ignore[no-untyped-def]
         provider_name: str,
         scanner_config: MarketScannerConfig,
     ) -> dict[str, object]:
-        """Run the two deterministic funnel stages without any history calls."""
+        """运行两层确定性漏斗，不读取任何逐股历史数据。"""
 
         provider, snapshot_path = latest_close_provider(provider_name)
         quotes = provider.fetch_realtime_quotes()
@@ -201,7 +202,7 @@ def create_app():  # type: ignore[no-untyped-def]
         include_chinext: bool = True,
         include_star_market: bool = True,
     ) -> dict[str, object]:
-        """Return every bullish perfect-doji/hammer match from the latest close."""
+        """返回最近收盘命中的全部阳线完美十字和锤子线。"""
 
         try:
             scanner_config = request_scanner_config(
@@ -225,10 +226,9 @@ def create_app():  # type: ignore[no-untyped-def]
         include_chinext: bool = True,
         include_star_market: bool = True,
     ) -> dict[str, object]:
-        """Read the full cached universe or the price/base-rule-qualified pool.
+        """读取完整缓存股票池，或读取通过价格和基础规则的股票池。
 
-        This route intentionally stops before pattern recognition and all per-stock
-        history calls.  It makes the first funnel stage auditable in the UI.
+        这个接口会在形态识别和逐股历史请求之前停止，方便前端核对第一层筛选结果。
         """
 
         if scope not in {"all", "base_candidates"}:

@@ -1,4 +1,4 @@
-"""Framework-neutral graph specification, ready to map into LangGraph nodes."""
+"""与框架无关的图定义，可直接映射为 LangGraph 节点。"""
 
 WORKFLOW_NODES = (
     "market_scanner",

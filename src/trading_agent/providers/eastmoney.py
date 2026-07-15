@@ -1,7 +1,6 @@
-"""Dependency-free Eastmoney public-data provider with strict completeness checks.
+"""不依赖第三方包的东方财富公开数据源，并执行严格完整性校验。
 
-This adapter is deliberately conservative: it returns a full, auditable snapshot or
-raises an error. A partial public response must never enter the recommendation flow.
+这个适配器宁可明确报错，也只返回完整、可核对的快照；公开接口的部分响应不能进入推荐流程。
 """
 
 from __future__ import annotations
@@ -26,19 +25,18 @@ Sleep = Callable[[float], None]
 
 
 class FreeDataProviderError(RuntimeError):
-    """Base error for a public-data fetch that cannot safely be used."""
+    """公开数据抓取结果无法安全使用时的基础异常。"""
 
 
 class SnapshotIncompleteError(FreeDataProviderError):
-    """The public endpoint did not provide a complete, internally valid universe."""
+    """公开接口没有返回完整且内部一致的全市场股票池。"""
 
 
 class EastmoneyFreeProvider(MarketDataProvider, CandidateResearchProvider):
-    """Free public-source provider for one 14:30 snapshot and shortlisted daily bars.
+    """提供 14:30 快照和入围股票日 K 的免费公开数据源。
 
-    It does not consume Kimi, 同花顺, or any `*_ths` source. It uses the Eastmoney
-    public quote and daily-K endpoints only. Upstream terms and availability still
-    need periodic review before unattended long-term use.
+    这里不使用 Kimi、同花顺或任何 *_ths 数据，只调用东方财富公开行情和日 K 接口。
+    长期无人值守运行前，仍需定期检查上游条款和接口可用性。
     """
 
     name = "eastmoney_free"
@@ -76,7 +74,7 @@ class EastmoneyFreeProvider(MarketDataProvider, CandidateResearchProvider):
         self._sleep = sleep
 
     def fetch_realtime_quotes(self) -> tuple[QuoteSnapshot, ...]:
-        """Fetch all pages sequentially, validate them, then persist one raw snapshot."""
+        """顺序抓取全部分页，校验通过后保存一份原始快照。"""
 
         first_page = self._fetch_with_retry(self._quote_url(page=1))
         first_data = _data_mapping(first_page)
@@ -85,9 +83,8 @@ class EastmoneyFreeProvider(MarketDataProvider, CandidateResearchProvider):
         page_payloads = [first_page]
         rows = _quote_rows(first_data)
         for page in range(2, pages + 1):
-            # The public endpoint can reset a connection when hit as a tight
-            # pagination burst.  A small deterministic pace is cheaper and
-            # safer than parallel requests; 56 pages finish in about 25s.
+            # 连续高速翻页容易触发公开接口重置连接。固定的小间隔比并发请求更稳，
+            # 56 页通常可以在约 25 秒内完成。
             self._sleep(self._page_interval_seconds)
             payload = self._fetch_with_retry(self._quote_url(page=page))
             page_payloads.append(payload)
@@ -102,7 +99,7 @@ class EastmoneyFreeProvider(MarketDataProvider, CandidateResearchProvider):
     def fetch_research_contexts(
         self, codes: Sequence[str], as_of: datetime
     ) -> dict[str, ResearchContext]:
-        """Load completed daily bars only after the candidate pool is formed."""
+        """只在候选池形成后加载完整日 K。"""
 
         contexts: dict[str, ResearchContext] = {}
         for code in codes:
@@ -204,7 +201,7 @@ def _urlopen_json(url: str) -> JsonObject:
             "User-Agent": "PersonalQuantTradingAgent/0.1 (+local-research)",
         },
     )
-    with urlopen(request, timeout=20) as response:  # noqa: S310 - endpoint is module constant
+    with urlopen(request, timeout=20) as response:  # noqa: S310 - 接口地址是模块常量
         payload = json.loads(response.read().decode("utf-8"))
     if not isinstance(payload, Mapping):
         raise FreeDataProviderError("Public endpoint JSON root is not an object")
@@ -235,8 +232,7 @@ def _quote_from_row(row: JsonObject, observed_at: datetime) -> QuoteSnapshot:
     return QuoteSnapshot(
         code=code,
         name=name,
-        # Suspended securities may have a missing price. Preserve the row for a
-        # complete universe audit; the deterministic scanner will reject its 0 price.
+        # 停牌股票可能没有价格。为了完整核对全市场仍保留该行，后续规则会排除 0 价格。
         last_price=_number(row.get("f2")) or 0.0,
         pct_change=_number(row.get("f3")) or 0.0,
         turnover_amount=_number(row.get("f6")) or 0.0,

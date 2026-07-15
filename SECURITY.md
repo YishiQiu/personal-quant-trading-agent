@@ -1,4 +1,4 @@
-# Security Policy
+# 安全政策
 
 ## 报告安全问题
 

@@ -1,5 +1,4 @@
-# LLM is a second-stage reviewer only.  It never scans the full market and it
-# cannot bypass the deterministic DecisionAgent or risk vetoes.
+# 大模型只负责第二阶段复核，不扫描整个市场，也不能绕过规则决策或风险否决。
 llm:
   enabled: true
   provider: deepseek

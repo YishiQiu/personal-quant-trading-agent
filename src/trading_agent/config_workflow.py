@@ -1,4 +1,4 @@
-"""Configuration of the candidate-research pipeline."""
+"""候选股研究流程配置。"""
 
 from __future__ import annotations
 

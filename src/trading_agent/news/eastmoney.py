@@ -1,9 +1,8 @@
-"""Candidate-only free news fallback using AKShare's Eastmoney adapter.
+"""通过 AKShare 的东方财富适配器，为候选股补充免费新闻。
 
-This is deliberately not part of the all-market scanner.  Eastmoney's public
-web search is queried only after deterministic pattern selection, and returned
-articles retain their original link for manual verification.  It is a best-
-effort personal-research source rather than a licensed or SLA-backed feed.
+这个来源不会加入全市场扫描。只有确定性形态筛选结束后，才会查询东方财富
+公开网页搜索，返回文章也会保留原始链接供人工核对。它适合尽力而为的个人
+研究，不是获得授权或服务等级协议保障的数据服务。
 """
 
 from __future__ import annotations
@@ -25,7 +24,7 @@ Row = Mapping[str, Any]
 
 
 class EastmoneyStockNewsProvider(NewsProvider):
-    """Retrieve recent, source-attributed articles for each research candidate."""
+    """为每只研究候选股获取近期且带来源的文章。"""
 
     name = "eastmoney_stock_news"
 
@@ -54,8 +53,7 @@ class EastmoneyStockNewsProvider(NewsProvider):
             try:
                 rows = _rows(self._fetch_frame(target.code))
             except (ImportError, OSError, RuntimeError, TypeError, ValueError) as exc:
-                # A public-source failure for one candidate must not discard
-                # successfully collected evidence for the remaining candidates.
+                # 单只候选股的公开源请求失败，不能丢掉其他候选股已经收集成功的证据。
                 logger.warning(
                     "Eastmoney candidate-news lookup failed",
                     extra={"provider": self.name, "code": target.code, "reason": str(exc)},
@@ -68,7 +66,7 @@ class EastmoneyStockNewsProvider(NewsProvider):
 def _akshare_stock_news(code: str) -> object:
     try:
         import akshare as ak
-    except ImportError as exc:  # pragma: no cover - optional dependency boundary
+    except ImportError as exc:  # pragma: no cover - 可选依赖的边界
         raise ImportError("Install the data extra to use Eastmoney candidate news") from exc
     return ak.stock_news_em(symbol=code)
 
@@ -139,7 +137,7 @@ def _canonical_url(url: str) -> str | None:
 
 
 def _mentions_target(target: NewsTarget, headline: str, summary: str) -> bool:
-    """Avoid treating a broad search result as evidence for a candidate stock."""
+    """避免把宽泛的搜索结果误当成候选股证据。"""
 
     text = headline + "\n" + summary
     return target.code in text or (len(target.name) >= 2 and target.name in text)

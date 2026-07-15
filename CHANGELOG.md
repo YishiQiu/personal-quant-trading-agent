@@ -2,6 +2,28 @@
 
 本项目遵循 [Semantic Versioning](https://semver.org/)。
 
+## [1.1.0] - 2026-07-15
+
+面向中文开发者的可复刻项目模板版本，选股和评分逻辑保持不变。
+
+### Added
+
+- 新增集中管理页面名称、标记和首屏文案的 `frontend/src/branding.ts`。
+- 新增完整的复刻与改版指南，覆盖品牌、策略、数据源、Agent 和发布检查。
+- README 增加项目模板入口和更直观的三步改版说明。
+
+### Changed
+
+- 代码注释、模块说明、关键算法说明和配置注释统一改为自然中文。
+- Python 包、FastAPI 和前端版本统一升级为 `1.1.0`。
+- GitHub 首页横幅和版本说明更新为模板化版本。
+
+### Verified
+
+- Python 测试与 Ruff 静态检查通过。
+- React / TypeScript 生产构建通过。
+- SVG 横幅通过 XML 结构校验。
+
 ## [1.0.0] - 2026-07-15
 
 首个稳定、可运行的个人 A 股尾盘研究版本。
@@ -29,4 +51,5 @@
 - React / TypeScript 生产构建通过。
 - 使用 5,527 只股票快照完成自定义条件浏览器验收。
 
+[1.1.0]: https://github.com/YishiQiu/personal-quant-trading-agent/compare/v1.0.0...v1.1.0
 [1.0.0]: https://github.com/YishiQiu/personal-quant-trading-agent/releases/tag/v1.0.0

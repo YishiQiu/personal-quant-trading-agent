@@ -1,4 +1,4 @@
-"""Second deterministic funnel: daily provisional-candle shape screening."""
+"""第二层确定性漏斗：按日 K 形态筛选候选股。"""
 
 from __future__ import annotations
 

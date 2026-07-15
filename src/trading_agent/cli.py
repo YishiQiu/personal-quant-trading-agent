@@ -1,4 +1,4 @@
-"""Local command line entry point for deterministic workflows."""
+"""确定性工作流的本地命令行入口。"""
 
 from __future__ import annotations
 

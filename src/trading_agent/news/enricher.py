@@ -1,4 +1,4 @@
-"""Fail-soft news enrichment and local evidence retention for research candidates."""
+"""为研究候选股容错补充新闻，并在本地保留原始证据。"""
 
 from __future__ import annotations
 
@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 
 class NewsEnricher:
-    """Attach attributable source records without allowing news outages to stop research."""
+    """附加可追溯来源的记录，新闻源中断时仍允许研究继续。"""
 
     def __init__(self, config: NewsConfig, providers: Sequence[NewsProvider]) -> None:
         self._config = config
